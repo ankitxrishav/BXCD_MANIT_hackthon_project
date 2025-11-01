@@ -21,6 +21,8 @@ import {
 } from 'firebase/firestore';
 import { useCollection } from '@/lib/firebase/hooks/useCollection';
 import { useDocument } from '@/lib/firebase/hooks/useDocument';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const CHAT_SESSION_ID = 'current_chat'; // For simplicity, using a single chat session
 
@@ -46,20 +48,35 @@ export default function ChatClient() {
 
   const { data: messages, loading: messagesLoading } = useCollection<ChatMessage>(messagesRef);
 
-  const createSessionIfNeeded = useCallback(async () => {
-    if (user && !chatSession) {
-      await setDoc(chatSessionRef!, {
+  const createSessionIfNeeded = useCallback(() => {
+    if (user && !chatSession && chatSessionRef) {
+      const newSession = {
         userId: user.uid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         title: 'Current Session',
+      };
+      setDoc(chatSessionRef, newSession).catch(error => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: chatSessionRef.path,
+          operation: 'create',
+          requestResourceData: newSession,
+        }));
       });
+
       // Add initial assistant message
-      const initialMsgRef = collection(chatSessionRef!, 'chatMessages');
-      await addDoc(initialMsgRef, {
-          role: 'assistant',
+      const initialMsgRef = collection(chatSessionRef, 'chatMessages');
+      const initialMessage = {
+          role: 'assistant' as const,
           text: 'Hello! How are you feeling today?',
           timestamp: serverTimestamp(),
+      };
+      addDoc(initialMsgRef, initialMessage).catch(error => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: initialMsgRef.path,
+            operation: 'create',
+            requestResourceData: initialMessage,
+        }));
       });
     }
   }, [user, chatSession, chatSessionRef]);
@@ -79,56 +96,73 @@ export default function ChatClient() {
 
     setIsLoading(true);
 
-    try {
-      const messagesCollectionRef = collection(chatSessionRef, 'chatMessages');
-      
-      // 1. Add user message to Firestore
-      const userMessageRef = await addDoc(messagesCollectionRef, userMessage);
-
-      // 2. Analyze sentiment
-      const sentimentResult = await analyzeSentiment({ text });
-      
-      // 3. Update user message with sentiment
-      await setDoc(userMessageRef, { sentiment: {
+    const messagesCollectionRef = collection(chatSessionRef, 'chatMessages');
+    
+    // 1. Add user message to Firestore
+    addDoc(messagesCollectionRef, userMessage)
+      .then(async (userMessageRef) => {
+        // 2. Analyze sentiment
+        const sentimentResult = await analyzeSentiment({ text });
+        const sentimentData = {
           score: sentimentResult.sentimentScore,
-          emotion: sentimentResult.emotion
-      } }, { merge: true });
+          emotion: sentimentResult.emotion,
+        };
 
-      // 4. Get personalized recommendation
-      const conversationContext = (messages ?? [])
-        .slice(-5)
-        .map(m => `${m.role}: ${m.text}`)
-        .join('\n');
+        // 3. Update user message with sentiment
+        setDoc(userMessageRef, { sentiment: sentimentData }, { merge: true })
+          .catch(error => {
+              errorEmitter.emit('permission-error', new FirestorePermissionError({
+                  path: userMessageRef.path,
+                  operation: 'update',
+                  requestResourceData: { sentiment: sentimentData },
+              }));
+          });
+        
+        // 4. Get personalized recommendation
+        const conversationContext = (messages ?? [])
+          .slice(-5)
+          .map(m => `${m.role}: ${m.text}`)
+          .join('\n');
 
-      const recommendationResult = await getPersonalizedRecommendation({
-        emotion: sentimentResult.emotion,
-        conversationContext: conversationContext,
+        const recommendationResult = await getPersonalizedRecommendation({
+          emotion: sentimentResult.emotion,
+          conversationContext: conversationContext,
+        });
+
+        // 5. Add assistant message to Firestore
+        const assistantMessage: Omit<ChatMessage, 'id'> = {
+          role: 'assistant',
+          text: recommendationResult.recommendation,
+          timestamp: serverTimestamp() as any,
+        };
+        addDoc(messagesCollectionRef, assistantMessage).catch(error => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: messagesCollectionRef.path,
+                operation: 'create',
+                requestResourceData: assistantMessage,
+            }));
+        });
+
+        // 6. Update session updated_at
+        setDoc(chatSessionRef, { updatedAt: serverTimestamp() }, { merge: true }).catch(error => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({
+                path: chatSessionRef.path,
+                operation: 'update',
+                requestResourceData: { updatedAt: 'serverTimestamp' },
+            }));
+        });
+
+      })
+      .catch(error => { // Catch error from adding user message
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: messagesCollectionRef.path,
+            operation: 'create',
+            requestResourceData: userMessage,
+        }));
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
-
-      // 5. Add assistant message to Firestore
-      const assistantMessage: Omit<ChatMessage, 'id'> = {
-        role: 'assistant',
-        text: recommendationResult.recommendation,
-        timestamp: serverTimestamp() as any,
-      };
-      await addDoc(messagesCollectionRef, assistantMessage);
-      
-      // 6. Update session updated_at
-      await setDoc(chatSessionRef, { updatedAt: serverTimestamp() }, { merge: true });
-
-    } catch (error) {
-      console.error('Error in chat flow:', error);
-      const errorMessage:  Omit<ChatMessage, 'id'> = {
-        role: 'assistant',
-        text: 'I seem to be having trouble connecting. Please try again in a moment.',
-        timestamp: serverTimestamp() as any,
-      };
-      if (chatSessionRef) {
-          await addDoc(collection(chatSessionRef, 'chatMessages'), errorMessage);
-      }
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
