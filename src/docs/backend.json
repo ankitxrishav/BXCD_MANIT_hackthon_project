@@ -6,21 +6,10 @@
       "type": "object",
       "description": "Represents a user's profile information.",
       "properties": {
-        "uid": {
-          "type": "string",
-          "description": "Unique identifier from Firebase Auth."
-        },
-        "email": {
-          "type": "string",
-          "format": "email"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "photoURL": {
-          "type": "string",
-          "format": "uri"
-        },
+        "uid": { "type": "string", "description": "Unique identifier from Firebase Auth." },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
         "settings": {
           "type": "object",
           "properties": {
@@ -96,7 +85,7 @@
     }
   },
   "auth": {
-    "providers": ["google.com"]
+    "providers": ["google.com", "password"]
   },
   "firestore": {
     "structure": [
@@ -104,7 +93,7 @@
         "path": "/users/{userId}",
         "definition": {
           "entityName": "User",
-          "schema": { "$ref": "#/backend/entities/User" },
+          "schema": { "$ref": "#/entities/User" },
           "description": "Stores user profile data. Accessible only by the owning user."
         }
       },
@@ -112,7 +101,7 @@
         "path": "/users/{userId}/chatSessions/{sessionId}",
         "definition": {
           "entityName": "ChatSession",
-          "schema": { "$ref": "#/backend/entities/ChatSession" },
+          "schema": { "$ref": "#/entities/ChatSession" },
           "description": "Subcollection for a user's chat sessions."
         }
       },
@@ -120,7 +109,7 @@
         "path": "/users/{userId}/chatSessions/{sessionId}/messages/{messageId}",
         "definition": {
           "entityName": "ChatMessage",
-          "schema": { "$ref": "#/backend/entities/ChatMessage" },
+          "schema": { "$ref": "#/entities/ChatMessage" },
           "description": "Subcollection for messages within a chat session."
         }
       },
@@ -128,7 +117,7 @@
         "path": "/users/{userId}/moodTimeline/{dayId}",
         "definition": {
           "entityName": "MoodTimelineEntry",
-          "schema": { "$ref": "#/backend/entities/MoodTimelineEntry" },
+          "schema": { "$ref": "#/entities/MoodTimelineEntry" },
           "description": "Subcollection for daily mood timeline entries."
         }
       },
@@ -136,7 +125,7 @@
         "path": "/users/{userId}/recommendations/{recId}",
         "definition": {
           "entityName": "Recommendation",
-          "schema": { "$ref": "#/backend/entities/Recommendation" },
+          "schema": { "$ref": "#/entities/Recommendation" },
           "description": "Subcollection for personalized recommendations."
         }
       }

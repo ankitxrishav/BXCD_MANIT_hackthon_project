@@ -18,7 +18,7 @@ import {
   updateDocumentNonBlocking,
   addDocumentNonBlocking,
 } from '@/firebase';
-import { collection, doc, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ChatContextType {
@@ -29,8 +29,8 @@ interface ChatContextType {
   isLoading: boolean;
   activeSessionId: string | null;
   setActiveSessionId: (sessionId: string | null) => void;
-  startNewSession: (initialMessageText?: string) => Promise<void>;
-  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp' | 'userId'>, userId: string) => Promise<string>;
+  startNewSession: (initialMessageText?: string) => Promise<string | undefined>;
+  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>, userId: string) => Promise<string>;
   updateMessage: (sessionId: string, messageId: string, updates: Partial<ChatMessage>) => void;
   addMoodEntry: (sentiment: Sentiment) => void;
   moodSummary: string | null;
@@ -79,15 +79,18 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [moodSummary, setMoodSummary] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [latestSentiment, setLatestSentiment] = useState<Sentiment | null>(null);
-  const isLoading = authLoading || sessionsLoading || messagesLoading || moodScoresLoading;
+  const isLoading = authLoading || sessionsLoading;
 
   // --- Effects ---
   useEffect(() => {
     if (!isLoading && userProfile) {
-      if (sessions === null) return; // Still waiting for sessions query to resolve
+      if (sessions === null) return;
       if (!activeSessionId && sessions.length > 0) {
         setActiveSessionId(sessions[0].id);
-      } else if (sessions.length === 0) {
+      } else if (activeSessionId && !sessions.some(s => s.id === activeSessionId)) {
+        // If active session was deleted or is no longer in the list
+        setActiveSessionId(sessions.length > 0 ? sessions[0].id : null);
+      } else if (!activeSessionId && sessions.length === 0) {
         startNewSession('Hello! How are you feeling today?');
       }
     }
@@ -108,40 +111,44 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       lastMessage: initialMessageText || '',
     };
     
-    await setDocumentNonBlocking(sessionRef, newSession, {});
+    setActiveSessionId(newSessionId);
+    setMoodSummary(null);
+    setLatestSentiment(null);
+    setSuggestions([]);
+
+    const batch = writeBatch(firestore);
+    batch.set(sessionRef, newSession);
 
     if (initialMessageText) {
-      const messagesColRef = collection(firestore, 'users', userProfile.uid, 'chatSessions', newSessionId, 'messages');
-      const initialMessage: Omit<ChatMessage, 'id'> = {
+      const messageId = uuidv4();
+      const messageRef = doc(firestore, 'users', userProfile.uid, 'chatSessions', newSessionId, 'messages', messageId);
+      const initialMessage: ChatMessage = {
+          id: messageId,
           role: 'assistant',
           text: initialMessageText,
           timestamp: serverTimestamp() as any,
           userId: 'assistant',
       };
-      await addDocumentNonBlocking(messagesColRef, initialMessage);
+      batch.set(messageRef, initialMessage);
     }
     
-    setActiveSessionId(newSessionId);
-    setMoodSummary(null);
-    setLatestSentiment(null);
-    setSuggestions([]);
+    await batch.commit();
+    return newSessionId;
   }, [userProfile, firestore]);
 
   const addMessage = useCallback(async (message: Omit<ChatMessage, 'id' | 'timestamp'>, userId: string): Promise<string> => {
     if (!activeSessionId || !userProfile || !firestore) throw new Error("Cannot add message, context not ready");
     
-    const messagesColRef = collection(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId, 'messages');
+    const messageId = uuidv4();
+    const messageRef = doc(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId, 'messages', messageId);
 
-    const newMessage: Omit<ChatMessage, 'id'> = {
+    const newMessage: ChatMessage = {
+      id: messageId,
       ...message,
       userId,
       timestamp: serverTimestamp() as any,
     };
     
-    const docRef = await addDocumentNonBlocking(messagesColRef, newMessage);
-    const messageId = docRef.id;
-
-    // Update session metadata
     const sessionRef = doc(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId);
     const sessionUpdate: Partial<ChatSession> = {
         updatedAt: serverTimestamp() as any,
@@ -153,7 +160,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       sessionUpdate.title = message.text.substring(0, 30) + (message.text.length > 30 ? '...' : '');
     }
     
-    updateDocumentNonBlocking(sessionRef, sessionUpdate);
+    const batch = writeBatch(firestore);
+    batch.set(messageRef, newMessage);
+    batch.update(sessionRef, sessionUpdate);
+
+    await batch.commit();
     
     return messageId;
   }, [activeSessionId, userProfile, firestore, sessions]);
@@ -167,6 +178,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const addMoodEntry = useCallback((sentiment: Sentiment) => {
     if (!userProfile || !firestore) return;
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    // To ensure we get a unique ID for each entry but can still query by day, we can create a new doc in a sub-collection.
+    // However, for simplicity and given the `dayId` structure, we'll overwrite/update the entry for the day.
+    // A more robust system might average scores for the day.
     const moodRef = doc(firestore, 'users', userProfile.uid, 'moodTimeline', today);
     const newMoodEntry: MoodScore = {
         date: today,
@@ -174,6 +188,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         emotion: sentiment.emotion,
         timestamp: serverTimestamp() as any,
     };
+    // Using set with merge to create or update the mood for the day.
     setDocumentNonBlocking(moodRef, newMoodEntry, { merge: true });
   }, [userProfile, firestore]);
 
@@ -182,7 +197,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     sessions,
     messages,
     moodScores,
-    isLoading,
+    isLoading: isLoading || messagesLoading || moodScoresLoading,
     activeSessionId,
     setActiveSessionId,
     startNewSession,

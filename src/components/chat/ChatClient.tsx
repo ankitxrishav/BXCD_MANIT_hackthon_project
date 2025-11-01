@@ -10,6 +10,7 @@ import { useChat } from '@/context/ChatProvider';
 import { summarizeSentimentAnalysis } from '@/ai/flows/summarize-sentiment-analysis';
 import SuggestedTopics from './SuggestedTopics';
 import { useAuth } from '@/hooks/use-auth.tsx';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function ChatClient() {
   const { userProfile } = useAuth();
@@ -30,19 +31,34 @@ export default function ChatClient() {
 
     setIsLoading(true);
     
-    // Optimistically add user message to UI
-    const userMessage: Omit<ChatMessageType, 'id'|'timestamp'> = {
+    // 1. Optimistically add user message to UI
+    const userMessageId = uuidv4();
+    const userMessage: ChatMessageType = {
+      id: userMessageId,
       role: 'user',
       text,
       userId: userProfile.uid,
+      timestamp: new Date(),
     };
+    // This is a temporary local update for responsiveness. The provider will get the canonical version from Firestore.
+    // We add this to the messages array in the AI call to ensure context is up-to-date.
 
-    // Add user message to Firestore
-    const userMessageId = await addMessage(userMessage, userProfile.uid);
 
     try {
-      // 1. Analyze sentiment and get a recommendation
-      const sentimentResult = await analyzeSentiment({ text });
+      // 2. Add user message to Firestore
+      await addMessage(userMessage, userProfile.uid);
+
+      // 3. Analyze sentiment and get a recommendation in parallel
+      const [sentimentResult, recommendationResult] = await Promise.all([
+        analyzeSentiment({ text }),
+        getPersonalizedRecommendation({
+          emotion: latestSentiment?.emotion || 'neutral', // Use previous emotion for context
+          conversationContext: [...messages, userMessage]
+            .slice(-5)
+            .map(m => `${m.role}: ${m.text}`)
+            .join('\n'),
+        })
+      ]);
       
       const currentSentiment = {
           emotion: sentimentResult.emotion,
@@ -55,20 +71,9 @@ export default function ChatClient() {
       // Update the user's message with the detected sentiment
       updateMessage(activeSessionId, userMessageId, { sentiment: currentSentiment });
 
-      // 2. Get AI response based on context
-      const conversationContext = [...messages, { ...userMessage, id: userMessageId, timestamp: new Date() }]
-        .slice(-5)
-        .map(m => `${m.role}: ${m.text}`)
-        .join('\n');
-
-      const recommendationResult = await getPersonalizedRecommendation({
-        emotion: sentimentResult.emotion,
-        conversationContext,
-      });
-      
       const primaryResponse = recommendationResult.recommendations[0] || "I'm here to listen. How can I help?";
 
-      // 3. Add assistant's message to Firestore
+      // 4. Add assistant's message to Firestore
       const assistantMessage: Omit<ChatMessageType, 'id'|'timestamp'> = {
         role: 'assistant',
         text: primaryResponse,
@@ -76,8 +81,8 @@ export default function ChatClient() {
       };
       await addMessage(assistantMessage, 'assistant');
 
-      // 4. Update dashboard UI elements
-      const sentimentData = [...messages, { ...userMessage, id: userMessageId, timestamp: new Date(), sentiment: currentSentiment }]
+      // 5. Update dashboard UI elements
+      const sentimentData = [...messages, { ...userMessage, sentiment: currentSentiment }]
         .filter(m => m.sentiment)
         .map(m => ({ emotion: m.sentiment!.emotion, score: m.sentiment!.score, text: m.text }));
       

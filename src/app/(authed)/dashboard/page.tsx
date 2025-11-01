@@ -6,8 +6,24 @@ import QuickAccess from '@/components/dashboard/QuickAccess';
 import { Skeleton } from '@/components/ui/skeleton';
 import AiSuggestions from '@/components/dashboard/AiSuggestions';
 import MoodHistory from '@/components/dashboard/MoodHistory';
-import AnimatedWrapper, { AnimatedItem } from '@/components/landing/AnimatedWrapper';
 import ChatBubble from '@/components/chat/ChatBubble';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
+};
+
 
 export default function DashboardPage() {
   const { userProfile, loading } = useAuth();
@@ -30,29 +46,34 @@ export default function DashboardPage() {
   }
 
   return (
-    <AnimatedWrapper type="stagger-children" className="space-y-8">
-      <AnimatedItem>
+    <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-8"
+    >
+      <motion.div variants={itemVariants}>
         <h1 className="text-3xl font-bold font-headline">Welcome back, {firstName}!</h1>
         <p className="text-muted-foreground">Here's a look at your recent activity and mood.</p>
-      </AnimatedItem>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <AnimatedItem className="lg:col-span-2">
+        <div className="lg:col-span-2">
             <MoodHistory />
-        </AnimatedItem>
-        <AnimatedItem>
+        </div>
+        <div>
             <AiSuggestions />
-        </AnimatedItem>
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <AnimatedItem>
+        <div>
             <QuickAccess />
-        </AnimatedItem>
-        <AnimatedItem>
+        </div>
+        <div>
             <RecentActivity />
-        </AnimatedItem>
+        </div>
       </div>
        <ChatBubble />
-    </AnimatedWrapper>
+    </motion.div>
   );
 }
