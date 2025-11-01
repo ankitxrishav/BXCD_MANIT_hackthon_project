@@ -42,7 +42,7 @@ export default function ChatBubble() {
 
   return (
     <>
-      <div className="fixed bottom-6 left-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50">
         <AnimatePresence>
             {showWelcome && !isOpen && (
                  <motion.div
@@ -50,11 +50,11 @@ export default function ChatBubble() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute bottom-full mb-3 w-64 cursor-pointer"
+                    className="absolute bottom-full right-0 mb-3 w-64 cursor-pointer"
                     onClick={() => setIsOpen(true)}
                 >
                     <div className="bg-card glass-card shadow-xl rounded-lg p-4 text-sm text-foreground relative">
-                       <div className="absolute -bottom-2 left-6 h-4 w-4 bg-card transform rotate-45"></div>
+                       <div className="absolute -bottom-2 right-6 h-4 w-4 bg-card transform rotate-45"></div>
                        <p>{welcomeMessage}</p>
                     </div>
                 </motion.div>
