@@ -11,7 +11,7 @@ import { MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useChat } from '@/context/ChatProvider';
 import { useCollection, useMemoFirebase } from '@/firebase';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth.tsx';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { ChatSession } from '@/lib/types';

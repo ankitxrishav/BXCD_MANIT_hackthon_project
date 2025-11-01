@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth.tsx';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import QuickAccess from '@/components/dashboard/QuickAccess';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -9,7 +9,7 @@ import { analyzeSentiment } from '@/ai/flows/sentiment-analysis';
 import { useChat } from '@/context/ChatProvider';
 import { summarizeSentimentAnalysis } from '@/ai/flows/summarize-sentiment-analysis';
 import SuggestedTopics from './SuggestedTopics';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth.tsx';
 
 export default function ChatClient() {
   const { userProfile } = useAuth();

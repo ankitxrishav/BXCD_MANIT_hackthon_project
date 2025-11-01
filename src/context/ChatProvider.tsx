@@ -11,7 +11,7 @@ import React, {
   useEffect,
 } from 'react';
 import type { ChatMessage, ChatSession, Sentiment } from '@/lib/types';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth.tsx';
 import {
   collection,
   doc,
