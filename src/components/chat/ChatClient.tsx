@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -47,21 +46,24 @@ export default function ChatClient() {
       };
 
       // Add user message to Firestore with sentiment in one go
-      await addMessage(userMessage, userProfile.uid, currentSentiment);
+      await addMessage(userMessage, currentSentiment);
 
       // Now update local state and fetch recommendations
       setLatestSentiment(currentSentiment);
       addMoodEntry(currentSentiment);
+      
+      const tempMessages = [...messages, { ...userMessage, id: '', timestamp: new Date() }];
 
       // Get recommendation using previous emotion for better context
       const recommendationResult = await getPersonalizedRecommendation({
         emotion: latestSentiment?.emotion || 'neutral',
-        conversationContext: [...messages, { ...userMessage, id: '', timestamp: new Date() }] // Create a temporary message for context
+        conversationContext: tempMessages
           .slice(-5)
           .map(m => `${m.role}: ${m.text}`)
           .join('\n'),
       });
-
+      
+      // Use the first recommendation as the primary chat response
       const primaryResponse = recommendationResult.recommendations[0] || "I'm here to listen. How can I help?";
 
       // Add assistant's message to Firestore
@@ -70,19 +72,20 @@ export default function ChatClient() {
         text: primaryResponse,
         userId: 'assistant',
       };
-      await addMessage(assistantMessage, 'assistant');
+      await addMessage(assistantMessage);
 
-      // Update dashboard UI elements
-      const sentimentData = [...messages, { ...userMessage, id: '', timestamp: new Date(), sentiment: currentSentiment }]
-        .filter(m => m.sentiment)
-        .map(m => ({ emotion: m.sentiment!.emotion, score: m.sentiment!.score, text: m.text }));
+      // Update dashboard UI elements (suggestions and summary)
+      setSuggestions(recommendationResult.recommendations);
+      
+      const sentimentData = tempMessages
+        .map(m => m.sentiment)
+        .filter((s): s is Sentiment => !!s);
       
       if (sentimentData.length > 2) { // Summarize after a few exchanges
         const summaryResult = await summarizeSentimentAnalysis({ sentimentData: JSON.stringify(sentimentData) });
         setMoodSummary(summaryResult.summary);
       }
 
-      setSuggestions(recommendationResult.recommendations);
 
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -91,7 +94,7 @@ export default function ChatClient() {
         text: 'Sorry, I encountered an error. Please try again.',
         userId: 'assistant',
       };
-      await addMessage(errorMessage, 'assistant');
+      await addMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }

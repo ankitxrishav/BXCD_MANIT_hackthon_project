@@ -21,8 +21,12 @@ const EmotionIcon = ({ emotion }: { emotion: string }) => {
 export default function SuggestedTopics() {
   const { suggestions, latestSentiment } = useChat();
 
-  // If we have suggestions, show them. Otherwise, show default topics.
-  const displaySuggestions = suggestions.length > 1 ? suggestions.slice(1) : ['Mindfulness', 'Sleep Improvement', 'Coping Strategies'];
+  // If we have more than one suggestion, show the rest. Otherwise, show default topics.
+  const displaySuggestions = suggestions.length > 1 
+    ? suggestions.slice(1) 
+    : ['Mindfulness', 'Sleep Improvement', 'Coping Strategies'];
+
+  const hasRealSuggestions = suggestions.length > 1;
 
   return (
     <Card className="rounded-xl shadow-sm">
@@ -45,7 +49,7 @@ export default function SuggestedTopics() {
                     <span className="whitespace-normal">{suggestion}</span>
                 </Button>
             ))}
-             {suggestions.length <= 1 && (
+             {!hasRealSuggestions && (
                 <p className="text-sm text-muted-foreground text-center pt-2">Suggestions will appear here as you chat.</p>
             )}
         </div>

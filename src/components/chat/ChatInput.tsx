@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef } from 'react';
@@ -38,7 +37,7 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message here..."
-          className="flex-1 resize-none pr-12 rounded-full bg-input border-none"
+          className="flex-1 resize-none pr-12 rounded-full bg-input border-none min-h-[40px] h-10"
           rows={1}
           disabled={isLoading}
         />
@@ -47,7 +46,7 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
         onClick={handleSendClick} 
         disabled={isLoading || !text.trim()} 
         size="icon"
-        className="rounded-full w-10 h-10 bg-primary/90 text-primary-foreground hover:bg-primary"
+        className="rounded-full w-10 h-10 bg-primary/90 text-primary-foreground hover:bg-primary transition-transform hover:scale-110 active:scale-95"
     >
         <SendHorizonal className="h-5 w-5" />
         <span className="sr-only">Send Message</span>
