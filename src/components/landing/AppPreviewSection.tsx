@@ -27,14 +27,14 @@ const items = [
       title: 'Emotion Graph',
       description: 'Track your mood fluctuations over time to spot trends.',
       header: <ImageHeader src="/img/Emotion Graph.png" alt="Emotion Graph Preview" />,
-      className: '',
+      className: 'md:col-span-1',
       icon: <ChartNoAxesColumnIncreasing className="h-4 w-4 text-neutral-500" />,
     },
     {
       title: 'Guided Breathing',
       description: 'Follow the animated guide to find your center.',
       header: <ImageHeader src="/img/Guided Breathing.png" alt="Guided Breathing Preview" />,
-      className: '',
+      className: 'md:col-span-1',
       icon: <Wind className="h-4 w-4 text-neutral-500" />,
     },
     {
@@ -58,7 +58,7 @@ export default function AppPreviewSection() {
                 </p>
             </div>
             <AnimatedWrapper type="stagger-children" className="mt-16">
-                <BentoGrid>
+                <BentoGrid className="md:grid-cols-3">
                     {items.map((item, i) => (
                         <AnimatedItem key={i}>
                             <BentoGridItem

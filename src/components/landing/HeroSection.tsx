@@ -8,8 +8,8 @@ import AnimatedWrapper from './AnimatedWrapper';
 
 export default function HeroSection() {
   return (
-    <section className="container mx-auto py-24 md:py-32 relative overflow-hidden">
-        <div className="px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <section className="relative overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center relative z-10">
             
             <AnimatedGridPattern
                 className="[mask-image:radial-gradient(500px_circle_at_center,white,transparent)] inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
@@ -48,22 +48,22 @@ export default function HeroSection() {
                     </span>
                 </div>
             </div>
-
-            {/* Hologram Chat UI */}
-            <AnimatedWrapper type="parallax-hero" className="mt-20 mx-auto">
-                <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
-                    <Image 
-                        src="/img/aabc.png"
-                        alt="Emodash application interface"
-                        width={1200}
-                        height={800}
-                        className="rounded-2xl shadow-2xl opacity-70"
-                        priority
-                    />
-                </div>
-            </AnimatedWrapper>
         </div>
+
+        {/* Hologram Chat UI with Parallax */}
+        <AnimatedWrapper type="parallax-hero" className="mt-20 max-w-6xl mx-auto px-4">
+            <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent z-10"></div>
+                <Image 
+                    src="/img/aabc.png"
+                    alt="Emodash application interface"
+                    width={1200}
+                    height={800}
+                    className="rounded-t-2xl shadow-2xl shadow-black/30 opacity-80"
+                    priority
+                />
+            </div>
+        </AnimatedWrapper>
     </section>
   );
 }
