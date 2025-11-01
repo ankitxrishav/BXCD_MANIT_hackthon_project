@@ -29,14 +29,19 @@ export default function ChatClient() {
 
     setIsLoading(true);
     
-    const userMessage: Omit<ChatMessageType, 'id' | 'timestamp' | 'userId'> = {
+    const userMessage: Omit<ChatMessageType, 'id' | 'timestamp' > = {
       role: 'user',
       text,
+      userId: userProfile.uid,
     };
 
     try {
       // Analyze sentiment first
       const sentimentResult = await analyzeSentiment({ text });
+      
+      if (!sentimentResult) {
+        throw new Error("Sentiment analysis failed.");
+      }
       
       const currentSentiment: Sentiment = {
           emotion: sentimentResult.emotion,
@@ -67,6 +72,7 @@ export default function ChatClient() {
       const assistantMessage: Omit<ChatMessageType, 'id'|'timestamp'|'userId'> = {
         role: 'assistant',
         text: primaryResponse,
+        userId: 'assistant',
       };
       await addMessage(assistantMessage, 'assistant');
 
@@ -88,6 +94,7 @@ export default function ChatClient() {
       const errorMessage: Omit<ChatMessageType, 'id'|'timestamp'|'userId'> = {
         role: 'assistant',
         text: 'Sorry, I encountered an error. Please try again.',
+        userId: 'assistant',
       };
       await addMessage(errorMessage, 'assistant');
     } finally {

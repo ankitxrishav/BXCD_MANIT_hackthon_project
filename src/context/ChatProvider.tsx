@@ -17,7 +17,7 @@ import {
   useCollection,
   useMemoFirebase,
 } from '@/firebase';
-import { collection, doc, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, doc, query, orderBy, serverTimestamp, writeBatch, collectionGroup } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ChatContextType {
@@ -68,19 +68,23 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const messages = messagesData || [];
 
   const allMessagesQuery = useMemoFirebase(() => {
-    if (!userProfile?.uid || !firestore || !activeSessionId) return null;
-    return query(collection(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId, 'messages'), orderBy('timestamp', 'asc'));
-  }, [userProfile?.uid, firestore, activeSessionId]);
-  const { data: allMessagesData } = useCollection<ChatMessage>(allMessagesQuery);
-  const allMessages = allMessagesData || [];
+    if (!userProfile?.uid || !firestore) return null;
+    // Use a collectionGroup query to get all messages for the user across all sessions
+    return query(collectionGroup(firestore, 'messages'), orderBy('timestamp', 'asc'));
+  }, [userProfile?.uid, firestore]);
   
+  const { data: allMessagesData } = useCollection<ChatMessage>(allMessagesQuery);
+
   const moodScores = useMemo(() => {
-    if (!allMessages) return [];
-    return allMessages.filter(m => m.sentiment).map(m => ({
-      ...m.sentiment,
-      timestamp: m.timestamp
-    })) as MoodScore[];
-  }, [allMessages]);
+    if (!allMessagesData) return [];
+    // Filter messages to ensure they belong to the current user before extracting mood scores
+    return allMessagesData
+      .filter(m => m.userId === userProfile?.uid && m.sentiment)
+      .map(m => ({
+        ...m.sentiment,
+        timestamp: m.timestamp
+      })) as MoodScore[];
+  }, [allMessagesData, userProfile?.uid]);
 
 
   // --- State ---

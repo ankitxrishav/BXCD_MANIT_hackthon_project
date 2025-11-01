@@ -29,7 +29,7 @@ const prompt = ai.definePrompt({
 Emotion: {{{emotion}}}
 Conversation Context: {{{conversationContext}}}
 
-- If the user's emotion is negative (e.g., 'sadness', 'anger', 'anxiety', 'fear'), provide a list of 4-5 actionable suggestions to help them cope or feel better.
+- If the user's emotion is negative (e.g., 'sadness', 'anger', 'anxiety', 'fear'), provide a list of 4-5 actionable suggestions to help them cope or feel better. These should be varied and include things like mindfulness exercises, simple physical activities, creative outlets, or reframing thoughts.
 - If the user's emotion is positive or neutral (e.g., 'joy', 'contentment', 'neutral'), provide a single, short, encouraging, and rewarding message to affirm their positive state.
 `,
 });
