@@ -38,7 +38,6 @@ export type ChatSession = {
 };
 
 export type MoodScore = {
-  date: string;
   score: number;
   emotion: string;
   timestamp: Date | Timestamp;

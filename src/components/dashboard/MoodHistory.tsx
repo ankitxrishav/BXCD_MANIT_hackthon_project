@@ -51,13 +51,16 @@ export default function MoodHistory() {
       return [];
     }
     
-    const validScores = [...moodScores].filter(item => item && item.timestamp && !isNaN(toDate(item.timestamp).getTime()));
+    const validScores = [...moodScores]
+        .filter(item => item && item.timestamp && !isNaN(toDate(item.timestamp).getTime()))
+        .map(item => ({...item, dateObj: toDate(item.timestamp)}));
+
 
     const dailyScores = validScores.reduce(
       (acc, scoreItem) => {
-        const dateStr = toDate(scoreItem.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const dateStr = scoreItem.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         if (!acc[dateStr]) {
-          acc[dateStr] = { scores: [], count: 0, date: toDate(scoreItem.timestamp) };
+          acc[dateStr] = { scores: [], count: 0, date: scoreItem.dateObj };
         }
         acc[dateStr].scores.push(scoreItem.score);
         acc[dateStr].count++;

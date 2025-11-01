@@ -20,8 +20,7 @@ export default function ChatClient() {
     setMoodSummary, 
     setSuggestions,
     latestSentiment,
-    setLatestSentiment, 
-    addMoodEntry
+    setLatestSentiment
   } = useChat();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -49,7 +48,6 @@ export default function ChatClient() {
 
       // Now update local state and fetch recommendations
       setLatestSentiment(currentSentiment);
-      addMoodEntry(currentSentiment);
       
       const tempMessages = [...messages, { ...userMessage, id: '', timestamp: new Date(), userId: userProfile.uid }];
 
