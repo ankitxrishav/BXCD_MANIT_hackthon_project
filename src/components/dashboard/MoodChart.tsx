@@ -36,11 +36,14 @@ export default function MoodChart() {
   const sevenDaysAgo = useMemo(() => startOfDay(subDays(new Date(), 6)), []);
 
   const sentimentQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+    // CRITICAL FIX: Ensure user and firestore are available before creating the query.
+    if (!user || !firestore) {
+      return null;
+    }
     // This is a collection group query to get all chatMessages for the user across all chat sessions.
     return query(
       collectionGroup(firestore, 'chatMessages'),
-      where('userId', '==', user.uid), // This requires a composite index in Firestore.
+      where('userId', '==', user.uid), // This now safely uses the user.uid
       where('sentiment', '!=', null),
       where('timestamp', '>=', Timestamp.fromDate(sevenDaysAgo)),
       orderBy('timestamp', 'desc')
@@ -56,6 +59,7 @@ export default function MoodChart() {
         return format(d, 'E');
     }).reverse();
 
+    // Initialize all days to ensure the chart shows 7 days
     daysOfWeek.forEach(day => {
         dailyScores[day] = { totalScore: 0, count: 0 };
     });
@@ -64,7 +68,8 @@ export default function MoodChart() {
       if (entry.sentiment && entry.timestamp) {
         const date = entry.timestamp.toDate();
         const day = format(date, 'E'); 
-        const score = (entry.sentiment.score + 1) * 5; // Scale from -1..1 to 0..10
+        // Scale from -1..1 to 0..10 for chart readability
+        const score = (entry.sentiment.score + 1) * 5; 
 
         if (dailyScores[day]) {
             dailyScores[day].totalScore += score;
