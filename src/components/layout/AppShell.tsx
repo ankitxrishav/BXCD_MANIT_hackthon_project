@@ -33,8 +33,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-4 z-50 mx-4">
         <div className="container flex h-16 items-center rounded-2xl border bg-background/80 backdrop-blur-sm shadow-lg">
-          <Logo />
-          <nav className="ml-10 hidden md:flex items-center space-x-6 text-sm font-medium">
+          <div className="mr-auto">
+            <Logo />
+          </div>
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -48,7 +50,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
-          <div className="flex flex-1 items-center justify-end">
+          <div className="flex items-center ml-6">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -84,7 +86,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="container pt-8 pb-12">
+      <main className="container pt-8 pb-12 px-4 sm:px-6 lg:px-8">
         {children}
       </main>
       <ChatBubble />
