@@ -30,25 +30,24 @@ const chartConfig = {
 } as const;
 
 export default function MoodChart() {
-  const { user } = useAuth();
+  const { userProfile } = useAuth();
   const { firestore } = useFirebase();
   
   const sevenDaysAgo = useMemo(() => startOfDay(subDays(new Date(), 6)), []);
 
   const sentimentQuery = useMemoFirebase(() => {
-    // CRITICAL FIX: Ensure user and firestore are available before creating the query.
-    if (!user || !firestore) {
+    // CRITICAL FIX: Ensure userProfile and its UID are available before creating the query.
+    if (!userProfile?.uid || !firestore) {
       return null;
     }
-    // This is a collection group query to get all chatMessages for the user across all chat sessions.
     return query(
       collectionGroup(firestore, 'chatMessages'),
-      where('userId', '==', user.uid),
+      where('userId', '==', userProfile.uid),
       where('sentiment', '!=', null),
       where('timestamp', '>=', Timestamp.fromDate(sevenDaysAgo)),
       orderBy('timestamp', 'desc')
     );
-  }, [user, firestore, sevenDaysAgo]);
+  }, [userProfile, firestore, sevenDaysAgo]);
 
   const { data: sentimentData, isLoading } = useCollection<ChatMessage>(sentimentQuery);
 
@@ -90,7 +89,8 @@ export default function MoodChart() {
 
   const hasData = useMemo(() => chartData.some(d => d.score > 0), [chartData]);
   
-  if (isLoading) {
+  // Show skeleton while loading or if the query hasn't been created yet.
+  if (isLoading || !sentimentQuery) {
       return (
           <Card>
               <CardHeader>

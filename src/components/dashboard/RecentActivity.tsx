@@ -17,18 +17,19 @@ import { Skeleton } from "../ui/skeleton";
 import type { ChatSession } from "@/lib/types";
 
 export default function RecentActivity() {
-  const { user } = useAuth();
+  const { userProfile } = useAuth();
   const { firestore } = useFirebase();
 
   const recentSessionsQuery = useMemoFirebase(() => {
-      if (!user || !firestore) return null;
-      const chatSessionRef = collection(firestore, 'users', user.uid, 'chatSessions');
+      // CRITICAL FIX: Ensure userProfile and its UID are available before creating the query.
+      if (!userProfile?.uid || !firestore) return null;
+      const chatSessionRef = collection(firestore, 'users', userProfile.uid, 'chatSessions');
       return query(chatSessionRef, orderBy("updatedAt", "desc"), limit(5));
-  }, [user, firestore])
+  }, [userProfile, firestore])
 
   const { data: recentSessions, isLoading } = useCollection<ChatSession>(recentSessionsQuery);
 
-  if (isLoading) {
+  if (isLoading || !recentSessionsQuery) {
       return (
           <Card>
               <CardHeader>
