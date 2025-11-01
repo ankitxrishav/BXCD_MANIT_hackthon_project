@@ -15,7 +15,6 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useMemo } from 'react';
-import type { MoodScore } from '@/lib/types';
 import { Timestamp } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 
@@ -23,7 +22,6 @@ const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
 };
-
 
 const chartConfig = {
   score: {
@@ -39,7 +37,6 @@ const toDate = (timestamp: any): Date => {
   if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
   }
-  // Handle cases where it might already be a Date object or ISO string
   if (timestamp.seconds) { // A plain object from Firestore offline cache
     return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
   }
@@ -54,33 +51,29 @@ export default function MoodHistory() {
       return [];
     }
     
-    // Filter out items with invalid timestamps and sort
-    const validScores = [...moodScores].filter(item => !isNaN(toDate(item.timestamp).getTime()));
+    const validScores = [...moodScores].filter(item => item && item.timestamp && !isNaN(toDate(item.timestamp).getTime()));
 
-    const sortedScores = validScores.sort((a, b) => 
-        toDate(a.timestamp).getTime() - toDate(b.timestamp).getTime()
-    );
-
-    // Aggregate scores by date (e.g., average score per day)
-    const dailyScores = sortedScores.reduce(
+    const dailyScores = validScores.reduce(
       (acc, scoreItem) => {
         const dateStr = toDate(scoreItem.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         if (!acc[dateStr]) {
-          acc[dateStr] = { scores: [], count: 0 };
+          acc[dateStr] = { scores: [], count: 0, date: toDate(scoreItem.timestamp) };
         }
         acc[dateStr].scores.push(scoreItem.score);
         acc[dateStr].count++;
         return acc;
       },
-      {} as Record<string, { scores: number[]; count: number }>
+      {} as Record<string, { scores: number[]; count: number, date: Date }>
     );
 
     return Object.entries(dailyScores)
-      .map(([date, data]) => ({
-        date,
+      .map(([dateStr, data]) => ({
+        date: dateStr,
         score: data.scores.reduce((a, b) => a + b, 0) / data.count,
+        sortDate: data.date,
       }))
-      .slice(-30); // show last 30 entries
+      .sort((a,b) => a.sortDate.getTime() - b.sortDate.getTime())
+      .slice(-30); 
   }, [moodScores]);
 
   return (
@@ -115,6 +108,7 @@ export default function MoodHistory() {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
+                    width={30}
                 />
                 <ChartTooltip
                     cursor={false}
