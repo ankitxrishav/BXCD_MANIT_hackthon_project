@@ -6,6 +6,7 @@ import {
   useContext,
   createContext,
   useCallback,
+  ReactNode,
 } from 'react';
 import type { AuthContextType, UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -28,6 +29,11 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const auth = useFirebaseAuthProvider();
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+};
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
