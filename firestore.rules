@@ -96,10 +96,12 @@ service cloud.firestore {
         return isOwner(userId) && resource != null;
       }
 
+      // Read access is handled by the collection group query rule below
       allow get: if isOwner(userId);
+      // List is handled by collection group query
       allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
 
@@ -187,11 +189,11 @@ service cloud.firestore {
     /**
      * @description Allow users to list their own chat messages across all sessions for the mood chart.
      * @path /chatMessages/{chatMessageId}
-     * @allow (list) User can list their own messages.
+     * @allow (list) User can list their own messages if the message's `userId` field matches their auth UID.
      * @principle Enforces collection group query ownership.
      */
-    match /{path=**}/chatMessages/{chatMessageId} {
-       allow list: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.uid == request.auth.uid;
+     match /{path=**}/chatMessages/{chatMessageId} {
+       allow list: if request.auth != null && request.auth.uid == resource.data.userId;
     }
   }
 }

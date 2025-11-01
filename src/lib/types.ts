@@ -18,6 +18,7 @@ export type UserSettings = {
 
 export type ChatMessage = {
   id?: string;
+  userId?: string; // Add userId to associate message with user for collection group queries
   role: 'user' | 'assistant';
   text: string;
   timestamp: Timestamp;

@@ -6,9 +6,9 @@
       "type": "object",
       "description": "Represents a user in the Mindwell application.",
       "properties": {
-        "id": {
+        "uid": {
           "type": "string",
-          "description": "Unique identifier for the User entity."
+          "description": "Unique identifier for the User entity, from Firebase Auth."
         },
         "firstName": {
           "type": "string",
@@ -38,9 +38,7 @@
         }
       },
       "required": [
-        "id",
-        "firstName",
-        "lastName",
+        "uid",
         "email"
       ]
     },
@@ -89,6 +87,10 @@
           "type": "string",
           "description": "Reference to ChatSession. (Relationship: ChatSession 1:N ChatMessage)"
         },
+        "userId": {
+            "type": "string",
+            "description": "The UID of the user who sent the message."
+        },
         "sender": {
           "type": "string",
           "description": "Indicates who sent the message ('user' or 'assistant')."
@@ -106,6 +108,7 @@
       "required": [
         "id",
         "chatSessionId",
+        "userId",
         "sender",
         "content",
         "timestamp"
@@ -210,8 +213,7 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "google.com"
     ]
   },
   "firestore": {

@@ -18,8 +18,9 @@ import {
 } from "@/components/ui/chart";
 import { useAuth } from "@/hooks/use-auth";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, query, where, orderBy, Timestamp } from "firebase/firestore";
+import { collectionGroup, query, where, orderBy, Timestamp } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
+import type { ChatMessage } from "@/lib/types";
 
 const chartConfig = {
   score: {
@@ -36,15 +37,17 @@ export default function MoodChart() {
 
   const sentimentQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
+    // This is a collection group query to get all chatMessages for the user across all chat sessions.
     return query(
-      collection(firestore, 'users', user.uid, 'chatMessages'),
+      collectionGroup(firestore, 'chatMessages'),
+      where('userId', '==', user.uid), // This requires a composite index in Firestore.
       where('sentiment', '!=', null),
       where('timestamp', '>=', Timestamp.fromDate(sevenDaysAgo)),
       orderBy('timestamp', 'desc')
     );
   }, [user, firestore, sevenDaysAgo]);
 
-  const { data: sentimentData, isLoading } = useCollection(sentimentQuery);
+  const { data: sentimentData, isLoading } = useCollection<ChatMessage>(sentimentQuery);
 
   const chartData = useMemo(() => {
     const dailyScores: { [key: string]: { totalScore: number; count: number } } = {};
@@ -79,6 +82,8 @@ export default function MoodChart() {
     });
 
   }, [sentimentData]);
+
+  const hasData = useMemo(() => chartData.some(d => d.score > 0), [chartData]);
   
   if (isLoading) {
       return (
@@ -101,25 +106,34 @@ export default function MoodChart() {
         <CardDescription>Your average mood scores over the last 7 days.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-64 w-full">
-          <ResponsiveContainer>
-            <BarChart data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0}}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="day"
-                tickLine={false}
-                tickMargin={10}
-                axisLine={false}
-              />
-              <YAxis domain={[0, 10]} tickLine={false} axisLine={false} tickMargin={10} />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="score" fill="var(--color-score)" radius={8} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+        {hasData ? (
+          <ChartContainer config={chartConfig} className="h-64 w-full">
+            <ResponsiveContainer>
+              <BarChart data={chartData} margin={{ top: 20, right: 20, left: -10, bottom: 0}}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <YAxis domain={[0, 10]} tickLine={false} axisLine={false} tickMargin={10} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="score" fill="var(--color-score)" radius={8} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        ) : (
+          <div className="flex h-64 items-center justify-center text-center text-muted-foreground">
+            <div>
+              <p>No mood data available yet.</p>
+              <p className="text-sm">Start a chat to see your mood trends here.</p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

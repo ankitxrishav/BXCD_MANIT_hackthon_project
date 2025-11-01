@@ -39,19 +39,20 @@ export default function ChatClient() {
 
   const createSessionIfNeeded = useCallback(async () => {
     if (user && !chatSession && chatSessionRef) {
-      const newSession = {
+      const newSession: Partial<ChatSession> = {
         userId: user.uid,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+        createdAt: serverTimestamp() as any,
+        updatedAt: serverTimestamp() as any,
         title: 'Current Session',
       };
-      setDocumentNonBlocking(chatSessionRef, newSession, {});
+      setDocumentNonBlocking(chatSessionRef, newSession, { merge: true });
 
       const initialMsgRef = collection(chatSessionRef, 'chatMessages');
-      const initialMessage = {
+      const initialMessage: Omit<ChatMessage, 'id'> = {
+        userId: user.uid,
         role: 'assistant' as const,
         text: 'Hello! How are you feeling today?',
-        timestamp: serverTimestamp(),
+        timestamp: serverTimestamp() as any,
       };
       addDocumentNonBlocking(initialMsgRef, initialMessage);
     }
@@ -65,6 +66,7 @@ export default function ChatClient() {
     if (!text.trim() || !user || !chatSessionRef) return;
 
     const userMessage: Omit<ChatMessage, 'id'> = {
+      userId: user.uid,
       role: 'user',
       text,
       timestamp: serverTimestamp() as any,
@@ -103,6 +105,7 @@ export default function ChatClient() {
       });
 
       const assistantMessage: Omit<ChatMessage, 'id'> = {
+        userId: user.uid,
         role: 'assistant',
         text: recommendationResult.recommendation,
         timestamp: serverTimestamp() as any,
