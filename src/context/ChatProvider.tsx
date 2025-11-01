@@ -17,7 +17,7 @@ import {
   useCollection,
   useMemoFirebase,
 } from '@/firebase';
-import { collection, doc, query, orderBy, serverTimestamp, writeBatch, collectionGroup } from 'firebase/firestore';
+import { collection, doc, query, orderBy, serverTimestamp, writeBatch, collectionGroup, where } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ChatContextType {
@@ -70,7 +70,11 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const allMessagesQuery = useMemoFirebase(() => {
     if (!userProfile?.uid || !firestore) return null;
     // Use a collectionGroup query to get all messages for the user across all sessions
-    return query(collectionGroup(firestore, 'messages'), orderBy('timestamp', 'asc'));
+    return query(
+      collectionGroup(firestore, 'messages'),
+      where('userId', '==', userProfile.uid),
+      orderBy('timestamp', 'asc')
+    );
   }, [userProfile?.uid, firestore]);
   
   const { data: allMessagesData } = useCollection<ChatMessage>(allMessagesQuery);
