@@ -1,10 +1,17 @@
 import { BentoGrid, BentoGridItem } from './BentoGrid';
 import { Bot, ChartNoAxesColumnIncreasing, Wind, BrainCircuit } from 'lucide-react';
 import AnimatedWrapper, { AnimatedItem } from './AnimatedWrapper';
+import Image from 'next/image';
 
-const Illustration = ({ icon: Icon }: { icon: React.ElementType }) => (
-    <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200/50 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100/50 items-center justify-center">
-        <Icon className="w-20 h-20 text-muted-foreground/50" />
+const ImageHeader = ({ src, alt }: { src: string, alt: string }) => (
+    <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200/50 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100/50 items-center justify-center overflow-hidden">
+        <Image 
+            src={src}
+            alt={alt}
+            width={500}
+            height={300}
+            className="object-cover w-full h-full"
+        />
     </div>
 );
 
@@ -12,28 +19,28 @@ const items = [
     {
       title: 'AI Chat Interface',
       description: 'A clean, calming space for your conversations with Emodash.',
-      header: <Illustration icon={Bot} />,
+      header: <ImageHeader src="/img/app-preview-chat.png" alt="AI Chat Interface Preview" />,
       className: 'md:col-span-2',
       icon: <Bot className="h-4 w-4 text-neutral-500" />,
     },
     {
       title: 'Emotion Graph',
       description: 'Track your mood fluctuations over time to spot trends.',
-      header: <Illustration icon={ChartNoAxesColumnIncreasing} />,
+      header: <ImageHeader src="/img/app-preview-graph.png" alt="Emotion Graph Preview" />,
       className: '',
       icon: <ChartNoAxesColumnIncreasing className="h-4 w-4 text-neutral-500" />,
     },
     {
       title: 'Guided Breathing',
       description: 'Follow the animated guide to find your center.',
-      header: <Illustration icon={Wind} />,
+      header: <ImageHeader src="/img/app-preview-breathing.png" alt="Guided Breathing Preview" />,
       className: '',
       icon: <Wind className="h-4 w-4 text-neutral-500" />,
     },
     {
       title: 'Personal Insights',
       description: 'Understand your emotional landscape with AI-driven summaries.',
-      header: <Illustration icon={BrainCircuit} />,
+      header: <ImageHeader src="/img/app-preview-insights.png" alt="Personal Insights Preview" />,
       className: 'md:col-span-2',
       icon: <BrainCircuit className="h-4 w-4 text-neutral-500" />,
     },
