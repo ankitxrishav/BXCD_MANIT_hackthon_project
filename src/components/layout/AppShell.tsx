@@ -30,9 +30,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const userInitial = userProfile?.displayName?.charAt(0) || userProfile?.email?.charAt(0) || 'U';
 
   return (
-    <div className="min-h-screen bg-secondary/50">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-4 z-50 mx-4">
+        <div className="container flex h-16 items-center rounded-2xl border bg-background/80 backdrop-blur-sm shadow-lg">
           <Logo />
           <nav className="ml-10 hidden md:flex items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
@@ -41,7 +41,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 href={link.href}
                 className={cn(
                   'transition-colors hover:text-primary',
-                  pathname === link.href ? 'text-primary' : 'text-foreground/60'
+                  pathname === link.href ? 'text-primary font-semibold' : 'text-foreground/60'
                 )}
               >
                 {link.label}
@@ -52,7 +52,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                  <Avatar className="h-9 w-9">
+                  <Avatar className="h-9 w-9 border-2 border-transparent hover:border-primary/50 transition-colors">
                     <AvatarImage src={userProfile?.photoURL || undefined} alt={userProfile?.displayName || 'User'} />
                     <AvatarFallback className="bg-primary text-primary-foreground">
                       {userInitial.toUpperCase()}
@@ -84,7 +84,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="container py-8">
+      <main className="container pt-8 pb-12">
         {children}
       </main>
       <ChatBubble />

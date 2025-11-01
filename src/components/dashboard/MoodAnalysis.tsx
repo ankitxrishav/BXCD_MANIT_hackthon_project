@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useChat } from '@/context/ChatProvider';
@@ -26,7 +27,7 @@ export default function MoodAnalysis() {
   const { latestSentiment, moodSummary } = useChat();
 
   return (
-    <Card>
+    <Card className="h-full transform transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
       <CardHeader>
         <CardTitle>Current Mood Analysis</CardTitle>
         <CardDescription>
@@ -36,8 +37,8 @@ export default function MoodAnalysis() {
       <CardContent>
         {latestSentiment ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between rounded-lg border bg-accent/50 p-4">
+                <div className="flex items-center gap-3">
                     <EmotionIcon emotion={latestSentiment.emotion} />
                     <p className="text-xl font-bold capitalize">{latestSentiment.emotion}</p>
                 </div>
@@ -52,7 +53,7 @@ export default function MoodAnalysis() {
             )}
           </div>
         ) : (
-          <div className="flex h-64 items-center justify-center text-center text-muted-foreground">
+          <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
             <div>
               <p>No mood data available yet.</p>
               <p className="text-sm">

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -33,7 +34,7 @@ export default function RecentActivity() {
   const { data: recentSessions, isLoading } = useCollection<ChatSession>(sessionsQuery);
 
   return (
-    <Card>
+    <Card className="transform transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
       <CardHeader>
         <CardTitle>Recent Activity</CardTitle>
         <CardDescription>
@@ -44,15 +45,15 @@ export default function RecentActivity() {
         <div className="space-y-6">
           {isLoading && (
             <div className="space-y-4">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
             </div>
           )}
           {!isLoading && recentSessions && recentSessions.length > 0 ? (
             recentSessions.map(session => (
-              <div key={session.id} className="flex items-start">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-accent-foreground">
+              <div key={session.id} className="flex items-center p-2 rounded-lg transition-colors hover:bg-accent/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-foreground">
                   <MessageSquare className="h-5 w-5" />
                 </div>
                 <div className="ml-4 flex-1">

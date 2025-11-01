@@ -18,7 +18,7 @@ export default function AiSuggestions() {
   const isReward = suggestions.length === 1;
 
   return (
-    <Card>
+    <Card className="h-full transform transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
       <CardHeader>
         <CardTitle>AI Suggestions</CardTitle>
         <CardDescription>
@@ -33,7 +33,7 @@ export default function AiSuggestions() {
           <ul className="space-y-4">
             {suggestions.map((suggestion, index) => (
               <li key={index} className="flex items-start gap-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-accent-foreground shrink-0 mt-1">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-accent-foreground shrink-0 mt-1">
                   {isReward ? <Gift className="h-5 w-5" /> : <Lightbulb className="h-5 w-5" />}
                 </div>
                 <p className="text-sm text-foreground/90">{suggestion}</p>
@@ -41,7 +41,7 @@ export default function AiSuggestions() {
             ))}
           </ul>
         ) : (
-          <div className="flex h-24 items-center justify-center text-center text-muted-foreground">
+          <div className="flex h-40 items-center justify-center text-center text-muted-foreground">
             <div>
               <p>No suggestions yet.</p>
               <p className="text-sm">Your AI companion will offer tips as you chat.</p>
