@@ -13,7 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useChat } from '@/context/ChatProvider';
 import { useCollection, useMemoFirebase } from '@/firebase';
 import { useAuth } from '@/hooks/use-auth.tsx';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { ChatSession } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
@@ -32,6 +32,13 @@ export default function RecentActivity() {
   }, [firestore, userProfile]);
 
   const { data: recentSessions, isLoading } = useCollection<ChatSession>(sessionsQuery);
+
+  const toDate = (timestamp: any): Date => {
+      if (timestamp instanceof Timestamp) {
+          return timestamp.toDate();
+      }
+      return new Date(timestamp);
+  }
 
   return (
     <Card className="transform transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
@@ -63,7 +70,7 @@ export default function RecentActivity() {
                   {session.updatedAt && (
                     <p className="text-sm text-muted-foreground">
                       Last activity{' '}
-                      {formatDistanceToNow(new Date(session.updatedAt as any), {
+                      {formatDistanceToNow(toDate(session.updatedAt), {
                         addSuffix: true,
                       })}
                     </p>
