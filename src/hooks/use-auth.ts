@@ -9,6 +9,8 @@ import type { AuthContextType, UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { Auth, User } from 'firebase/auth';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -28,23 +30,42 @@ export const useAuthProvider = (): AuthContextType => {
 
   const fetchUserProfile = useCallback(async (firebaseUser: User, db: Firestore) => {
     const userRef = doc(db, 'users', firebaseUser.uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      setUserProfile(userSnap.data() as UserProfile);
-    } else {
-      const newUserProfile: UserProfile = {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL,
-        createdAt: serverTimestamp() as any,
-        settings: {
-          enableSentimentAnalysis: true,
-          dataRetentionPeriod: '90d',
-        }
-      };
-      setDocumentNonBlocking(userRef, newUserProfile, {});
-      setUserProfile(newUserProfile);
+    try {
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        setUserProfile(userSnap.data() as UserProfile);
+      } else {
+        const newUserProfile: UserProfile = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          createdAt: serverTimestamp() as any,
+          settings: {
+            enableSentimentAnalysis: true,
+            dataRetentionPeriod: '90d',
+          }
+        };
+        setDoc(userRef, newUserProfile).catch(error => {
+            errorEmitter.emit(
+              'permission-error',
+              new FirestorePermissionError({
+                path: userRef.path,
+                operation: 'create',
+                requestResourceData: newUserProfile,
+              })
+            )
+        });
+        setUserProfile(newUserProfile);
+      }
+    } catch (error) {
+       errorEmitter.emit(
+              'permission-error',
+              new FirestorePermissionError({
+                path: userRef.path,
+                operation: 'get',
+              })
+            )
     }
   }, []);
 
@@ -71,7 +92,7 @@ export const useAuthProvider = (): AuthContextType => {
       router.push('/dashboard');
     } catch (error: any) {
       // Don't log an error if the user cancels the popup
-      if (error.code === 'auth/cancelled-popup-request') {
+      if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
         return;
       }
       console.error('Error signing in with Google', error);
