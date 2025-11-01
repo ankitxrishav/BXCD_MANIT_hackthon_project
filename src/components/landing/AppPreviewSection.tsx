@@ -21,24 +21,28 @@ const items = [
       description: 'A clean, calming space for your conversations with Emodash.',
       header: <ImageHeader src="/img/ai.jpg" alt="AI Chat Interface Preview" />,
       icon: <Bot className="h-4 w-4 text-neutral-500" />,
+      className: "md:col-span-3",
     },
     {
       title: 'Emotion Graph',
       description: 'Track your mood fluctuations over time to spot trends.',
       header: <ImageHeader src="/img/Emotion Graph.png" alt="Emotion Graph Preview" />,
       icon: <ChartNoAxesColumnIncreasing className="h-4 w-4 text-neutral-500" />,
+      className: "md:col-span-2",
     },
     {
       title: 'Guided Activities',
       description: 'Follow guided exercises for breathing and meditation.',
       header: <ImageHeader src="/img/Guided Breathing.png" alt="Guided Breathing Preview" />,
       icon: <Wind className="h-4 w-4 text-neutral-500" />,
+      className: "md:col-span-2",
     },
     {
       title: 'Personal Insights',
       description: 'Understand your emotional landscape with AI-driven summaries.',
       header: <ImageHeader src="/img/Personal Insights.jpg" alt="Personal Insights Preview" />,
       icon: <BrainCircuit className="h-4 w-4 text-neutral-500" />,
+      className: "md:col-span-3",
     },
   ];
 
@@ -58,10 +62,10 @@ export default function AppPreviewSection() {
                         </p>
                     </AnimatedItem>
                 </div>
-                <div className="mt-16 max-w-5xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="mt-16 max-w-6xl mx-auto">
+                    <BentoGrid className="grid-cols-1 md:grid-cols-5">
                         {items.map((item, i) => (
-                            <AnimatedItem key={i}>
+                            <AnimatedItem key={i} className={item.className}>
                                 <BentoGridItem
                                     title={item.title}
                                     description={item.description}
@@ -70,7 +74,7 @@ export default function AppPreviewSection() {
                                 />
                             </AnimatedItem>
                         ))}
-                    </div>
+                    </BentoGrid>
                 </div>
             </AnimatedWrapper>
         </section>
