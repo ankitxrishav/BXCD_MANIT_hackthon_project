@@ -17,7 +17,7 @@ interface ChatDialogProps {
 export default function ChatDialog({ isOpen, onOpenChange }: ChatDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0 border-none bg-transparent shadow-none">
+      <DialogContent className="max-w-4xl h-[80vh] p-0 border-none glass-card shadow-2xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Chat with your AI Assistant</DialogTitle>
           <DialogDescription>

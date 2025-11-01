@@ -1,10 +1,8 @@
-
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth.tsx';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -90,7 +88,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <main className="container pt-8 pb-12 px-4 sm:px-6 lg:px-8">
         {children}
       </main>
-      <ChatBubble />
     </div>
   );
 }

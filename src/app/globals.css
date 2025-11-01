@@ -7,7 +7,7 @@
   :root {
     --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
+    --card: 224 71.4% 6.1%; /* Slightly lighter card */
     --card-foreground: 210 20% 98%;
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
@@ -30,32 +30,39 @@
     --user-message-foreground: 210 20% 98%;
     --assistant-message: 215 20% 30%;
     --assistant-message-foreground: 210 20% 98%;
+
+    /* Chart Colors */
+    --chart-1: 22.1 94.4% 64.1%; /* Orange */
+    --chart-2: 218.1 94.7% 65.1%; /* Blue */
+    --chart-3: 153.8 81.1% 54.1%; /* Green */
+    --chart-4: 280.1 83.3% 67.8%; /* Purple */
+    --chart-5: 0 92.9% 67.5%; /* Red */
   }
 
   .light {
-    --background: 200 20% 98%;
-    --foreground: 200 20% 10%;
-    --card: 200 20% 100%;
-    --card-foreground: 200 20% 10%;
-    --popover: 200 20% 100%;
-    --popover-foreground: 200 20% 10%;
+    --background: 220 20% 98%;
+    --foreground: 220 20% 10%;
+    --card: 220 20% 100%;
+    --card-foreground: 220 20% 10%;
+    --popover: 220 20% 100%;
+    --popover-foreground: 220 20% 10%;
     --primary: 262.1 83.3% 57.8%;
     --primary-foreground: 210 20% 98%;
-    --secondary: 210 20% 95%;
-    --secondary-foreground: 200 20% 10%;
-    --muted: 210 20% 95%;
-    --muted-foreground: 200 20% 40%;
-    --accent: 210 20% 90%;
-    --accent-foreground: 200 20% 10%;
+    --secondary: 220 10% 95%;
+    --secondary-foreground: 220 20% 10%;
+    --muted: 220 10% 95%;
+    --muted-foreground: 220 10% 40%;
+    --accent: 220 10% 90%;
+    --accent-foreground: 220 20% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
     --ring: 262.1 83.3% 57.8%;
     --user-message: 262.1 83.3% 57.8%;
     --user-message-foreground: 0 0% 98%;
-    --assistant-message: 210 20% 95%;
-    --assistant-message-foreground: 200 20% 10%;
+    --assistant-message: 220 10% 95%;
+    --assistant-message-foreground: 220 20% 10%;
   }
 }
 
@@ -69,10 +76,14 @@
   }
 
   .glass-card {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg;
+    @apply bg-card/60 backdrop-blur-lg border border-white/10 shadow-lg;
+  }
+
+  .light .glass-card {
+    @apply bg-card/70 border-white/20;
   }
   
-  .light .glass-card {
-    @apply bg-white/50 border-white/20;
+  .glow-shadow {
+    box-shadow: 0 0 20px 0px hsl(var(--primary) / 0.3);
   }
 }

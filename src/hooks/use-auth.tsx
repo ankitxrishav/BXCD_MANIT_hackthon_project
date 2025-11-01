@@ -16,6 +16,7 @@ import {
   useFirestore,
   useDoc,
   useMemoFirebase,
+  setDocumentNonBlocking
 } from '@/firebase';
 import {
   GoogleAuthProvider,
@@ -24,7 +25,7 @@ import {
   User as FirebaseUser,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, serverTimestamp } from 'firebase/firestore';
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -63,18 +64,24 @@ export const useFirebaseAuthProvider = (): AuthContextType => {
     async (firebaseUser: FirebaseUser) => {
       if (!firestore) return;
       const userRef = doc(firestore, 'users', firebaseUser.uid);
+
       const profile: UserProfile = {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
         displayName: firebaseUser.displayName,
         photoURL: firebaseUser.photoURL,
         settings: {
-            enableSentimentAnalysis: true,
-            dataRetentionPeriod: '90d'
-        }
+          enableSentimentAnalysis: true,
+          dataRetentionPeriod: '90d',
+        },
+        chatSessions: {},
+        chatMessages: {},
       };
+      
+      // Use non-blocking write to create the user document only if it doesn't exist.
+      // We pass the entire profile object to ensure the document is created.
+      setDocumentNonBlocking(userRef, profile, { merge: true });
 
-      await setDoc(userRef, profile, { merge: true });
       router.push('/dashboard');
     },
     [firestore, router]
@@ -109,5 +116,5 @@ export const useFirebaseAuthProvider = (): AuthContextType => {
     }
   };
 
-  return { userProfile, loading, signInWithGoogle, signInWithEmail, logout };
+  return { userProfile: userProfile ?? null, loading, signInWithGoogle, signInWithEmail, logout };
 };

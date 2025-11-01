@@ -8,6 +8,8 @@ export type UserProfile = {
   displayName: string | null;
   photoURL: string | null;
   settings?: UserSettings;
+  chatSessions?: Record<string, ChatSession>;
+  chatMessages?: Record<string, Record<string, ChatMessage>>;
 };
 
 export type UserSettings = {

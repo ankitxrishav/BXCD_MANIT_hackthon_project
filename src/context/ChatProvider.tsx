@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, {
@@ -7,36 +6,36 @@ import React, {
   useState,
   ReactNode,
   useCallback,
-  Dispatch,
-  SetStateAction,
   useEffect,
+  useMemo,
 } from 'react';
-import type { ChatMessage, ChatSession, Sentiment } from '@/lib/types';
+import type { ChatMessage, ChatSession, Sentiment, UserProfile, MoodScore } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth.tsx';
 import {
-  collection,
-  doc,
-  serverTimestamp,
-  addDoc,
-  setDoc,
-  query,
-  orderBy,
-} from 'firebase/firestore';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+  useFirestore,
+  useDoc,
+  useMemoFirebase,
+  setDocumentNonBlocking
+} from '@/firebase';
+import { doc, serverTimestamp } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ChatContextType {
-  messages: ChatMessage[];
+  userProfile: UserProfile | null;
   sessions: ChatSession[];
+  messages: ChatMessage[];
+  moodScores: MoodScore[];
   activeSessionId: string | null;
-  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
-  startNewSession: (initialMessageText?: string) => void;
   setActiveSessionId: (sessionId: string | null) => void;
+  startNewSession: (initialMessageText?: string) => void;
+  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp' | 'userId'>, userId: string) => Promise<string>;
+  updateMessage: (sessionId: string, messageId: string, updates: Partial<ChatMessage>) => void;
   moodSummary: string | null;
-  setMoodSummary: Dispatch<SetStateAction<string | null>>;
+  setMoodSummary: React.Dispatch<React.SetStateAction<string | null>>;
   suggestions: string[];
-  setSuggestions: Dispatch<SetStateAction<string[]>>;
+  setSuggestions: React.Dispatch<React.SetStateAction<string[]>>;
   latestSentiment: Sentiment | null;
-  setLatestSentiment: Dispatch<SetStateAction<Sentiment | null>>;
+  setLatestSentiment: React.Dispatch<React.SetStateAction<Sentiment | null>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -50,129 +49,146 @@ export const useChat = () => {
 };
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
-  const { userProfile } = useAuth();
+  const { userProfile: authProfile, loading: authLoading } = useAuth();
   const firestore = useFirestore();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  
+  const userDocRef = useMemoFirebase(() => {
+    if (!authProfile || !firestore) return null;
+    return doc(firestore, 'users', authProfile.uid);
+  }, [authProfile, firestore]);
 
-  const messagesQuery = useMemoFirebase(() => {
-    if (!activeSessionId || !userProfile || !firestore) return null;
-    return query(
-      collection(
-        firestore,
-        `users/${userProfile.uid}/chatSessions/${activeSessionId}/chatMessages`
-      ),
-      orderBy('timestamp', 'asc')
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
+
+  const sessions = useMemo(() => {
+    if (!userProfile?.chatSessions) return [];
+    return Object.values(userProfile.chatSessions).sort(
+      (a, b) => new Date(b.updatedAt as any).getTime() - new Date(a.updatedAt as any).getTime()
     );
-  }, [activeSessionId, userProfile, firestore]);
+  }, [userProfile]);
 
-  const { data: messages } = useCollection<ChatMessage>(messagesQuery);
-
-  const sessionsQuery = useMemoFirebase(() => {
-    if (!userProfile || !firestore) return null;
-    return query(
-      collection(firestore, `users/${userProfile.uid}/chatSessions`),
-      orderBy('updatedAt', 'desc')
+  const messages = useMemo(() => {
+    if (!userProfile?.chatMessages || !activeSessionId) return [];
+    const sessionMessages = userProfile.chatMessages[activeSessionId];
+    if (!sessionMessages) return [];
+    return Object.values(sessionMessages).sort(
+      (a, b) => new Date(a.timestamp as any).getTime() - new Date(b.timestamp as any).getTime()
     );
-  }, [userProfile, firestore]);
-
-  const { data: sessions } = useCollection<ChatSession>(sessionsQuery);
+  }, [userProfile, activeSessionId]);
+  
+  const moodScores = useMemo(() => {
+      if (!userProfile?.chatMessages) return [];
+      const allMessages = Object.values(userProfile.chatMessages).flatMap(session => Object.values(session));
+      return allMessages
+        .filter(msg => msg.sentiment)
+        .map(msg => ({
+            score: msg.sentiment!.score,
+            date: (msg.timestamp as any).toDate ? (msg.timestamp as any).toDate().toISOString() : new Date(msg.timestamp as any).toISOString()
+        }));
+  }, [userProfile]);
 
   const [moodSummary, setMoodSummary] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [latestSentiment, setLatestSentiment] = useState<Sentiment | null>(
-    null
-  );
+  const [latestSentiment, setLatestSentiment] = useState<Sentiment | null>(null);
 
   useEffect(() => {
-    if (!activeSessionId && sessions && sessions.length > 0) {
-      setActiveSessionId(sessions[0].id);
+    if (!authLoading && authProfile && !isProfileLoading) {
+      if (!activeSessionId && sessions.length > 0) {
+        setActiveSessionId(sessions[0].id);
+      } else if (sessions.length === 0) {
+        startNewSession('Hello! How are you feeling today?');
+      }
     }
-  }, [sessions, activeSessionId]);
+  }, [authLoading, authProfile, isProfileLoading, sessions, activeSessionId]);
 
 
-  const startNewSession = useCallback(
-    async (initialMessageText?: string) => {
+  const startNewSession = useCallback(async (initialMessageText?: string) => {
       if (!userProfile || !firestore) return;
 
-      const newSessionRef = doc(
-        collection(firestore, `users/${userProfile.uid}/chatSessions`)
-      );
-
-      const newSession: Omit<ChatSession, 'id'> = {
+      const newSessionId = uuidv4();
+      const newSession: ChatSession = {
+        id: newSessionId,
         userId: userProfile.uid,
         title: `New Conversation`,
         updatedAt: serverTimestamp() as any,
       };
 
-      await setDoc(newSessionRef, newSession);
-      const newSessionId = newSessionRef.id;
+      const updates: any = {
+        [`chatSessions.${newSessionId}`]: newSession
+      };
+
+      if (initialMessageText) {
+        const messageId = uuidv4();
+        updates[`chatMessages.${newSessionId}.${messageId}`] = {
+            id: messageId,
+            role: 'assistant',
+            text: initialMessageText,
+            timestamp: serverTimestamp(),
+            userId: 'assistant',
+        };
+      }
+      
+      setDocumentNonBlocking(doc(firestore, `users/${userProfile.uid}`), updates, { merge: true });
 
       setActiveSessionId(newSessionId);
       setMoodSummary(null);
       setLatestSentiment(null);
-
-      if (initialMessageText) {
-        const messagesCol = collection(
-          firestore,
-          `users/${userProfile.uid}/chatSessions/${newSessionId}/chatMessages`
-        );
-        addDoc(messagesCol, {
-          role: 'assistant',
-          text: initialMessageText,
-          timestamp: serverTimestamp(),
-          userId: 'assistant',
-        });
-      }
-    },
-    [userProfile, firestore]
+      setSuggestions([]);
+    }, [userProfile, firestore]
   );
-
-  const addMessage = useCallback(
-    async (message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
-      if (!activeSessionId || !userProfile || !firestore) return;
-
-      const messagesCol = collection(
-        firestore,
-        `users/${userProfile.uid}/chatSessions/${activeSessionId}/chatMessages`
-      );
-      await addDoc(messagesCol, {
+  
+  const addMessage = useCallback(async (message: Omit<ChatMessage, 'id' | 'timestamp' | 'userId'>, userId: string): Promise<string> => {
+      if (!activeSessionId || !userProfile || !firestore) throw new Error("Cannot add message, context not ready");
+      
+      const messageId = uuidv4();
+      const newMessage = {
         ...message,
+        id: messageId,
+        userId,
         timestamp: serverTimestamp(),
-      });
-
-      const sessionRef = doc(
-        firestore,
-        `users/${userProfile.uid}/chatSessions`,
-        activeSessionId
-      );
-      
-      const currentSession = sessions && sessions.find(s => s.id === activeSessionId);
-      const isGenericTitle = currentSession?.title === 'New Conversation';
-      
-      const updatePayload: any = {
-        updatedAt: serverTimestamp(),
       };
+      
+      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const isGenericTitle = currentSession?.title === 'New Conversation';
 
+      const updates: any = {
+        [`chatMessages.${activeSessionId}.${messageId}`]: newMessage,
+        [`chatSessions.${activeSessionId}.updatedAt`]: serverTimestamp()
+      };
+      
       if (isGenericTitle && message.role === 'user' && message.text) {
-        updatePayload.title = message.text.substring(0, 30) + (message.text.length > 30 ? '...' : '');
+        updates[`chatSessions.${activeSessionId}.title`] = message.text.substring(0, 30) + (message.text.length > 30 ? '...' : '');
+      }
+
+      setDocumentNonBlocking(doc(firestore, `users/${userProfile.uid}`), updates, { merge: true });
+      
+      return messageId;
+
+    }, [activeSessionId, userProfile, firestore, sessions]
+  );
+  
+  const updateMessage = useCallback((sessionId: string, messageId: string, updates: Partial<ChatMessage>) => {
+      if (!userProfile || !firestore) return;
+      
+      const updatePayload: any = {};
+      for (const [key, value] of Object.entries(updates)) {
+          updatePayload[`chatMessages.${sessionId}.${messageId}.${key}`] = value;
       }
       
-      await setDoc(
-        sessionRef,
-        updatePayload,
-        { merge: true }
-      );
-    },
-    [activeSessionId, userProfile, firestore, sessions]
-  );
+      setDocumentNonBlocking(doc(firestore, `users/${userProfile.uid}`), updatePayload, { merge: true });
+
+  }, [userProfile, firestore]);
 
   const value = {
-    messages: messages || [],
-    sessions: sessions || [],
+    userProfile,
+    sessions,
+    messages,
+    moodScores,
     activeSessionId,
-    addMessage,
-    startNewSession,
     setActiveSessionId,
+    startNewSession,
+    addMessage,
+    updateMessage,
     moodSummary,
     setMoodSummary,
     suggestions,
