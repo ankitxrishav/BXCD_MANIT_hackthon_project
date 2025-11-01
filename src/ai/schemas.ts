@@ -61,3 +61,23 @@ export const SummarizeSentimentAnalysisOutputSchema = z.object({
 export type SummarizeSentimentAnalysisOutput = z.infer<
   typeof SummarizeSentimentAnalysisOutputSchema
 >;
+
+export const GenerateMeditationInputSchema = z.object({
+  topic: z.string().describe('The topic for the meditation, e.g., "calm", "focus", "gratitude".'),
+});
+export type GenerateMeditationInput = z.infer<typeof GenerateMeditationInputSchema>;
+
+export const GenerateMeditationOutputSchema = z.object({
+  script: z.string().describe('A short, guided meditation script (2-3 paragraphs) based on the topic.'),
+});
+export type GenerateMeditationOutput = z.infer<typeof GenerateMeditationOutputSchema>;
+
+export const JournalPromptsInputSchema = z.object({
+  emotion: z.string().describe('The user\'s current primary emotion (e.g., "sadness", "joy").'),
+});
+export type JournalPromptsInput = z.infer<typeof JournalPromptsInputSchema>;
+
+export const JournalPromptsOutputSchema = z.object({
+  prompts: z.array(z.string()).describe('A list of 3-4 journaling prompts tailored to the user\'s emotion.'),
+});
+export type JournalPromptsOutput = z.infer<typeof JournalPromptsOutputSchema>;

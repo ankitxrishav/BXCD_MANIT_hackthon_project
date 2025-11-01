@@ -5,17 +5,12 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-export const GenerateMeditationInputSchema = z.object({
-  topic: z.string().describe('The topic for the meditation, e.g., "calm", "focus", "gratitude".'),
-});
-export type GenerateMeditationInput = z.infer<typeof GenerateMeditationInputSchema>;
-
-export const GenerateMeditationOutputSchema = z.object({
-  script: z.string().describe('A short, guided meditation script (2-3 paragraphs) based on the topic.'),
-});
-export type GenerateMeditationOutput = z.infer<typeof GenerateMeditationOutputSchema>;
+import { 
+  GenerateMeditationInputSchema, 
+  GenerateMeditationOutputSchema, 
+  type GenerateMeditationInput, 
+  type GenerateMeditationOutput 
+} from '@/ai/schemas';
 
 export async function generateMeditation(input: GenerateMeditationInput): Promise<GenerateMeditationOutput> {
   return generateMeditationFlow(input);

@@ -5,17 +5,12 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-export const JournalPromptsInputSchema = z.object({
-  emotion: z.string().describe('The user\'s current primary emotion (e.g., "sadness", "joy").'),
-});
-export type JournalPromptsInput = z.infer<typeof JournalPromptsInputSchema>;
-
-export const JournalPromptsOutputSchema = z.object({
-  prompts: z.array(z.string()).describe('A list of 3-4 journaling prompts tailored to the user\'s emotion.'),
-});
-export type JournalPromptsOutput = z.infer<typeof JournalPromptsOutputSchema>;
+import { 
+  JournalPromptsInputSchema, 
+  JournalPromptsOutputSchema,
+  type JournalPromptsInput,
+  type JournalPromptsOutput
+} from '@/ai/schemas';
 
 export async function generateJournalPrompts(input: JournalPromptsInput): Promise<JournalPromptsOutput> {
   return generateJournalPromptsFlow(input);
