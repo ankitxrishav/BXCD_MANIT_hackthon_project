@@ -40,7 +40,7 @@ const items = [
     {
       title: 'Personal Insights',
       description: 'Understand your emotional landscape with AI-driven summaries.',
-      header: <ImageHeader src="/img/Personal Insights.png" alt="Personal Insights Preview" />,
+      header: <ImageHeader src="/img/Personal Insights.jpg" alt="Personal Insights Preview" />,
       className: 'md:col-span-2',
       icon: <BrainCircuit className="h-4 w-4 text-neutral-500" />,
     },

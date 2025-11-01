@@ -4,21 +4,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const testimonials = [
     {
         quote: "Emodash has been a game-changer for my mental wellness. The AI is so understanding, and the suggestions are genuinely helpful.",
-        name: "Jessica Miller",
+        name: "Priya Sharma",
         title: "App User",
-        avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d"
+        avatar: "https://i.pravatar.cc/150?u=priya"
     },
     {
         quote: "I love tracking my mood over time. It's helped me see patterns I never noticed before. Highly recommend this app to anyone.",
-        name: "David Chen",
+        name: "Rohan Mehta",
         title: "Student",
-        avatar: "https://i.pravatar.cc/150?u=a042581f4e29026705d"
+        avatar: "https://i.pravatar.cc/150?u=rohan"
     },
     {
         quote: "As someone who is often hesitant to talk about my feelings, the privacy and non-judgmental nature of Emodash have made all the difference.",
-        name: "Sarah Jones",
+        name: "Ananya Reddy",
         title: "Designer",
-        avatar: "https://i.pravatar.cc/150?u=a042581f4e29026706d"
+        avatar: "https://i.pravatar.cc/150?u=ananya"
     }
 ]
 
