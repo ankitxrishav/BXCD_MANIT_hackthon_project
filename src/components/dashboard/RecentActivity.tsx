@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/card';
 import { MessageSquare } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useChat } from '@/context/ChatProvider';
 import { useCollection, useMemoFirebase } from '@/firebase';
 import { useAuth } from '@/hooks/use-auth.tsx';
 import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';

@@ -21,6 +21,7 @@ import {
 import { useAuth } from '@/hooks/use-auth.tsx';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import Badges from '@/components/settings/Badges';
 
 export default function SettingsPage() {
   const { userProfile, logout } = useAuth();
@@ -60,6 +61,7 @@ export default function SettingsPage() {
               <Skeleton className="h-10 w-1/4" />
               <Skeleton className="h-64 w-full" />
               <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-48 w-full" />
           </div>
       )
   }
@@ -70,6 +72,8 @@ export default function SettingsPage() {
         <h1 className="text-3xl font-bold font-headline">Settings</h1>
         <p className="text-muted-foreground">Manage your account and preferences.</p>
       </div>
+      
+      <Badges />
 
       <Card>
         <CardHeader>

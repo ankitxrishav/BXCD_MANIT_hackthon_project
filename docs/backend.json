@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -209,6 +210,32 @@
         "recommendationText",
         "timestamp"
       ]
+    },
+    "Badge": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Badge",
+      "type": "object",
+      "description": "Represents a badge awarded to a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Badge entity (e.g., 'first-chat')."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Badge)"
+        },
+        "achievedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the badge was achieved.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "achievedAt"
+      ]
     }
   },
   "auth": {
@@ -345,8 +372,28 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/badges/{badgeId}",
+        "definition": {
+          "entityName": "Badge",
+          "schema": {
+            "$ref": "#/backend/entities/Badge"
+          },
+          "description": "Stores badges awarded to a specific user. Accessible only by the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth UID."
+            },
+            {
+              "name": "badgeId",
+              "description": "The unique identifier for the badge."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability, adhering to the principles of DBAC (Database-Based Access Control) and QAPs (Rules are not Filters). The structure prioritizes path-based ownership and membership maps for collaborative data access, eliminating the need for `get()` calls in security rules and enabling atomic operations.\n\n*   **Authorization Independence:** Achieved through denormalization. Specifically, any data requiring access control based on parent attributes (e.g., collaborative chat sessions) will have relevant user roles/permissions denormalized into the child documents (not applicable here, as user-owned data is used.)\n*   **QAPs Support:** The structure uses structural segregation to guarantee that all documents within a collection share identical security requirements, which facilitates secure list operations.\n\nHere's how each collection contributes to these goals:\n\n*   `/users/{userId}`: Stores user profiles, using path-based ownership for private user data. This ensures only the authenticated user can access their profile. User ID from `request.auth.uid` is explicitly included as a field in the document, improving readability and debuggability.\n*   `/users/{userId}/chatSessions/{chatSessionId}`: Stores chat sessions owned by a specific user.  This structure enforces a clear ownership model, making security rules straightforward.\n*   `/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}`: Stores individual chat messages within a chat session, maintaining the path-based ownership for data security.\n*   `/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}/sentimentAnalysis/{sentimentAnalysisId}`: Stores sentiment analysis results for specific messages. The path reflects that sentiment analysis is only accessible in context of a message. Sentiment analysis data is not meant to be accessed independent of a chat message.\n*   `/users/{userId}/voiceBlobs/{voiceBlobId}`: Stores voice recordings uploaded by users, maintaining the path-based ownership for user privacy.\n*   `/users/{userId}/recommendations/{recommendationId}`: Stores personalized recommendations for each user, derived from sentiment analysis and chat context. These are owned by the user and accessible via path based rules."
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability, adhering to the principles of DBAC (Database-Based Access Control) and QAPs (Rules are not Filters). The structure prioritizes path-based ownership and membership maps for collaborative data access, eliminating the need for `get()` calls in security rules and enabling atomic operations.\n\n*   **Authorization Independence:** Achieved through denormalization. Specifically, any data requiring access control based on parent attributes (e.g., collaborative chat sessions) will have relevant user roles/permissions denormalized into the child documents (not applicable here, as user-owned data is used.)\n*   **QAPs Support:** The structure uses structural segregation to guarantee that all documents within a collection share identical security requirements, which facilitates secure list operations.\n\nHere's how each collection contributes to these goals:\n\n*   `/users/{userId}`: Stores user profiles, using path-based ownership for private user data. This ensures only the authenticated user can access their profile. User ID from `request.auth.uid` is explicitly included as a field in the document, improving readability and debuggability.\n*   `/users/{userId}/chatSessions/{chatSessionId}`: Stores chat sessions owned by a specific user.  This structure enforces a clear ownership model, making security rules straightforward.\n*   `/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}`: Stores individual chat messages within a chat session, maintaining the path-based ownership for data security.\n*   `/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}/sentimentAnalysis/{sentimentAnalysisId}`: Stores sentiment analysis results for specific messages. The path reflects that sentiment analysis is only accessible in context of a message. Sentiment analysis data is not meant to be accessed independent of a chat message.\n*   `/users/{userId}/voiceBlobs/{voiceBlobId}`: Stores voice recordings uploaded by users, maintaining the path-based ownership for user privacy.\n*   `/users/{userId}/recommendations/{recommendationId}`: Stores personalized recommendations for each user, derived from sentiment analysis and chat context. These are owned by the user and accessible via path based rules.\n*   `/users/{userId}/badges/{badgeId}`: Stores the badges a user has earned. The path-based ownership model ensures that users can only view and manage their own badges."
   }
 }

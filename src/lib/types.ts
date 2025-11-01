@@ -1,3 +1,4 @@
+
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -47,3 +48,11 @@ export interface AuthContextType {
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
 }
+
+export type Badge = {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    achieved: boolean;
+};
