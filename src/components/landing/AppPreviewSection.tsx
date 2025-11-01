@@ -5,13 +5,14 @@ import AnimatedWrapper, { AnimatedItem } from './AnimatedWrapper';
 import Image from 'next/image';
 
 const ImageHeader = ({ src, alt }: { src: string; alt: string }) => (
-    <Image 
-        src={src}
-        alt={alt}
-        width={500}
-        height={300}
-        className="object-cover w-full h-full group-hover/bento:scale-105 transition-transform duration-200"
-    />
+    <div className="relative w-full h-full min-h-[15rem] overflow-hidden rounded-xl border border-white/10 group-hover/bento:shadow-xl transition-shadow">
+        <Image 
+            src={src}
+            alt={alt}
+            fill
+            className="object-cover object-top w-full h-full group-hover/bento:scale-105 transition-transform duration-300"
+        />
+    </div>
 );
 
 const items = [
@@ -20,28 +21,24 @@ const items = [
       description: 'A clean, calming space for your conversations with Emodash.',
       header: <ImageHeader src="/img/ai.jpg" alt="AI Chat Interface Preview" />,
       icon: <Bot className="h-4 w-4 text-neutral-500" />,
-      className: "md:col-span-2",
     },
     {
       title: 'Emotion Graph',
       description: 'Track your mood fluctuations over time to spot trends.',
       header: <ImageHeader src="/img/Emotion Graph.png" alt="Emotion Graph Preview" />,
       icon: <ChartNoAxesColumnIncreasing className="h-4 w-4 text-neutral-500" />,
-      className: "md:col-span-1",
     },
     {
       title: 'Guided Activities',
       description: 'Follow guided exercises for breathing and meditation.',
       header: <ImageHeader src="/img/Guided Breathing.png" alt="Guided Breathing Preview" />,
       icon: <Wind className="h-4 w-4 text-neutral-500" />,
-      className: "md:col-span-1",
     },
     {
       title: 'Personal Insights',
       description: 'Understand your emotional landscape with AI-driven summaries.',
       header: <ImageHeader src="/img/Personal Insights.jpg" alt="Personal Insights Preview" />,
       icon: <BrainCircuit className="h-4 w-4 text-neutral-500" />,
-      className: "md:col-span-2",
     },
   ];
 
@@ -61,20 +58,20 @@ export default function AppPreviewSection() {
                         </p>
                     </AnimatedItem>
                 </div>
-                <AnimatedItem className="mt-16">
-                    <BentoGrid className="max-w-5xl mx-auto md:grid-rows-2">
+                <div className="mt-16 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {items.map((item, i) => (
-                            <BentoGridItem
-                                key={i}
-                                title={item.title}
-                                description={item.description}
-                                header={item.header}
-                                icon={item.icon}
-                                className={item.className}
-                            />
+                            <AnimatedItem key={i}>
+                                <BentoGridItem
+                                    title={item.title}
+                                    description={item.description}
+                                    header={item.header}
+                                    icon={item.icon}
+                                />
+                            </AnimatedItem>
                         ))}
-                    </BentoGrid>
-                </AnimatedItem>
+                    </div>
+                </div>
             </AnimatedWrapper>
         </section>
     );
