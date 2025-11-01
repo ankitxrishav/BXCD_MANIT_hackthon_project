@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { format, subDays } from 'date-fns';
+import { format, subDays, startOfDay, isSameDay } from 'date-fns';
 import {
   Card,
   CardContent,
@@ -16,6 +16,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useChat } from "@/context/ChatProvider";
+import type { ChatMessage } from "@/lib/types";
 
 const chartConfig = {
   score: {
@@ -24,23 +26,42 @@ const chartConfig = {
   },
 } as const;
 
+// Helper to process messages and calculate daily average mood scores
+const calculateMoodScores = (messages: ChatMessage[]) => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => startOfDay(subDays(new Date(), i)));
+    const dailyScores: { [key: string]: { total: number; count: number } } = {};
 
-// Mock data for the mood chart
-const generateMockData = () => {
-    const data = [];
-    for (let i = 6; i >= 0; i--) {
-        const date = subDays(new Date(), i);
-        data.push({
-            day: format(date, 'E'),
-            score: Math.floor(Math.random() * 8) + 2, // Random score between 2 and 9
-        });
-    }
-    return data;
-}
+    messages.forEach(message => {
+        if (message.sentiment) {
+            const messageDate = startOfDay(message.timestamp);
+            last7Days.forEach(day => {
+                if (isSameDay(messageDate, day)) {
+                    const dayString = format(day, 'yyyy-MM-dd');
+                    if (!dailyScores[dayString]) {
+                        dailyScores[dayString] = { total: 0, count: 0 };
+                    }
+                    // Convert sentiment score from [-1, 1] to [0, 10]
+                    const moodScore = (message.sentiment.score + 1) * 5;
+                    dailyScores[dayString].total += moodScore;
+                    dailyScores[dayString].count++;
+                }
+            });
+        }
+    });
 
+    return last7Days.reverse().map(day => {
+        const dayString = format(day, 'yyyy-MM-dd');
+        const data = dailyScores[dayString];
+        return {
+            day: format(day, 'E'),
+            score: data ? data.total / data.count : 0,
+        };
+    });
+};
 
 export default function MoodChart() {
-  const chartData = useMemo(() => generateMockData(), []);
+  const { messages } = useChat();
+  const chartData = useMemo(() => calculateMoodScores(messages), [messages]);
   const hasData = useMemo(() => chartData.some(d => d.score > 0), [chartData]);
 
   return (

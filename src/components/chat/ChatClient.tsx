@@ -2,73 +2,73 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { ChatMessage } from '@/lib/types';
+import type { ChatMessage as ChatMessageType } from '@/lib/types';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import { getPersonalizedRecommendation } from '@/ai/flows/personalized-recommendations';
 import { analyzeSentiment } from '@/ai/flows/sentiment-analysis';
+import { useChat } from '@/context/ChatProvider';
 
 export default function ChatClient() {
+  const { messages, addMessage, startNewSession } = useChat();
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
-    // Start with an initial message from the assistant
-    setMessages([
-      {
-        id: 'initial-message',
-        role: 'assistant',
-        text: 'Hello! How are you feeling today?',
-        timestamp: new Date(),
-      },
-    ]);
-  }, []);
+    // If there are no messages, start a new session with an initial message.
+    if (messages.length === 0) {
+      startNewSession('Hello! How are you feeling today?');
+    }
+  }, [messages.length, startNewSession]);
 
   const handleSend = async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isLoading) return;
 
-    const userMessage: ChatMessage = {
+    const userMessage: ChatMessageType = {
       id: `user-${Date.now()}`,
       role: 'user',
       text,
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    addMessage(userMessage);
     setIsLoading(true);
 
     try {
-      // Get sentiment from the user's message
+      // Analyze sentiment and get a recommendation
       const sentimentResult = await analyzeSentiment({ text });
-
+      
       const conversationContext = [...messages, userMessage]
         .slice(-5)
         .map(m => `${m.role}: ${m.text}`)
         .join('\n');
 
-      // Get a personalized recommendation
       const recommendationResult = await getPersonalizedRecommendation({
         emotion: sentimentResult.emotion,
-        conversationContext: conversationContext,
+        conversationContext,
       });
 
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: ChatMessageType = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
         text: recommendationResult.recommendation,
         timestamp: new Date(),
+        sentiment: {
+          score: sentimentResult.sentimentScore,
+          emotion: sentimentResult.emotion,
+        },
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      addMessage(assistantMessage);
+
     } catch (error) {
       console.error('Error getting AI response:', error);
-      const errorMessage: ChatMessage = {
+      const errorMessage: ChatMessageType = {
         id: `error-${Date.now()}`,
         role: 'assistant',
         text: 'Sorry, I encountered an error. Please try again.',
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      addMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }

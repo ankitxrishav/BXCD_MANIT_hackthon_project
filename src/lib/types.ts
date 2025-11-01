@@ -20,7 +20,7 @@ export type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
   text: string;
-  timestamp: Date; // Changed from Timestamp
+  timestamp: Date;
   sentiment?: {
     score: number;
     emotion: string;
@@ -30,7 +30,7 @@ export type ChatMessage = {
 export type ChatSession = {
   id: string;
   userId: string;
-  updatedAt: Date; // Changed from Timestamp
+  updatedAt: Date;
   title: string;
 };
 

@@ -9,19 +9,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MessageSquare } from "lucide-react";
-import { formatDistanceToNow, subHours } from 'date-fns';
-import type { ChatSession } from "@/lib/types";
-
-// Mock data for recent sessions
-const MOCK_SESSIONS: ChatSession[] = [
-    { id: '1', userId: 'mock-user-123', title: 'Evening Reflection', updatedAt: subHours(new Date(), 2) },
-    { id: '2', userId: 'mock-user-123', title: 'Feeling a bit down', updatedAt: subHours(new Date(), 20) },
-    { id: '3', userId: 'mock-user-123', title: 'A good day', updatedAt: subHours(new Date(), 48) },
-];
-
+import { formatDistanceToNow } from 'date-fns';
+import { useChat } from "@/context/ChatProvider";
 
 export default function RecentActivity() {
-  const recentSessions = MOCK_SESSIONS;
+  const { sessions } = useChat();
+
+  // Show the most recent 3 sessions
+  const recentSessions = sessions.slice(-3).reverse();
 
   return (
     <Card>
@@ -38,7 +33,7 @@ export default function RecentActivity() {
                   <MessageSquare className="h-5 w-5" />
                 </div>
                 <div className="ml-4 flex-1">
-                  <p className="text-sm font-medium leading-none">{session.title}</p>
+                  <p className="text-sm font-medium leading-none truncate">{session.title}</p>
                   {session.updatedAt && (
                     <p className="text-sm text-muted-foreground">
                       Last activity {formatDistanceToNow(session.updatedAt, { addSuffix: true })}
