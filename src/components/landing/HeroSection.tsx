@@ -54,7 +54,7 @@ export default function HeroSection() {
                 <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
                     <Image 
-                        src="/img/main.png"
+                        src="/img/aabc.png"
                         alt="Emodash application interface"
                         width={1200}
                         height={800}
