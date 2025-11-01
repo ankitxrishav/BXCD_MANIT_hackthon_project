@@ -2,10 +2,11 @@
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
-import MoodChart from '@/components/dashboard/MoodChart';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import QuickAccess from '@/components/dashboard/QuickAccess';
 import { Skeleton } from '@/components/ui/skeleton';
+import MoodAnalysis from '@/components/dashboard/MoodAnalysis';
+import AiSuggestions from '@/components/dashboard/AiSuggestions';
 
 export default function DashboardPage() {
   const { userProfile, loading } = useAuth();
@@ -36,11 +37,14 @@ export default function DashboardPage() {
       </div>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2">
-          <MoodChart />
+          <MoodAnalysis />
         </div>
         <div className="md:col-span-1">
           <RecentActivity />
         </div>
+      </div>
+      <div>
+        <AiSuggestions />
       </div>
       <div>
         <QuickAccess />

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -26,7 +27,7 @@ const prompt = ai.definePrompt({
   name: 'summarizeSentimentAnalysisPrompt',
   input: {schema: SummarizeSentimentAnalysisInputSchema},
   output: {schema: SummarizeSentimentAnalysisOutputSchema},
-  prompt: `You are an AI assistant specializing in analyzing sentiment data and providing concise summaries of mood trends over time. Generate a summary of the user's mood trends over time from the following data: {{{sentimentData}}}`,
+  prompt: `You are an AI assistant specializing in analyzing sentiment data and providing concise summaries of mood trends over time. Generate a one-paragraph summary of the user's mood trends from the current conversation, based on the following JSON data: {{{sentimentData}}}. Focus on the overall emotional arc and any significant shifts.`,
 });
 
 const summarizeSentimentAnalysisFlow = ai.defineFlow(

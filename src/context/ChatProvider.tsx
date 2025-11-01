@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, Dispatch, SetStateAction } from 'react';
 import type { ChatMessage, ChatSession } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -11,6 +11,10 @@ interface ChatContextType {
   activeSessionId: string | null;
   addMessage: (message: ChatMessage) => void;
   startNewSession: (initialMessageText?: string) => void;
+  moodSummary: string | null;
+  setMoodSummary: Dispatch<SetStateAction<string | null>>;
+  suggestions: string[];
+  setSuggestions: Dispatch<SetStateAction<string[]>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -28,6 +32,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [moodSummary, setMoodSummary] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const startNewSession = useCallback((initialMessageText?: string) => {
     if (!user) return;
@@ -42,6 +48,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     
     setSessions(prev => [...prev, newSession]);
     setActiveSessionId(newSessionId);
+    setMoodSummary(null);
+    setSuggestions([]);
 
     let initialMessages: ChatMessage[] = [];
     if (initialMessageText) {
@@ -64,7 +72,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         if (session.id === activeSessionId) {
           // If the title is generic, update it with the first user message
           const isGenericTitle = session.title === 'New Conversation';
-          const newTitle = (isGenericTitle && message.role === 'user') ? message.text : session.title;
+          const newTitle = (isGenericTitle && message.role === 'user') ? message.text.substring(0, 30) + '...' : session.title;
           return { ...session, title: newTitle, updatedAt: new Date() };
         }
         return session;
@@ -79,6 +87,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     activeSessionId,
     addMessage,
     startNewSession,
+    moodSummary,
+    setMoodSummary,
+    suggestions,
+    setSuggestions
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

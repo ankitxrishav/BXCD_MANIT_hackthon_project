@@ -1,3 +1,4 @@
+
 import {z} from 'genkit';
 
 export const SentimentAnalysisInputSchema = z.object({
@@ -45,7 +46,7 @@ export type PersonalizedRecommendationOutput = z.infer<
 export const SummarizeSentimentAnalysisInputSchema = z.object({
   sentimentData: z
     .string()
-    .describe('The sentiment data to summarize, provided as a string.'),
+    .describe('A JSON string of sentiment data to summarize. Each item should have emotion, score, and text.'),
 });
 
 export type SummarizeSentimentAnalysisInput = z.infer<
@@ -55,12 +56,13 @@ export type SummarizeSentimentAnalysisInput = z.infer<
 export const SummarizeSentimentAnalysisOutputSchema = z.object({
   summary: z
     .string()
-    .describe("A concise summary of the user's mood trends over time."),
+    .describe("A concise, one-paragraph summary of the user's mood trends over time based on the data."),
 });
 
 export type SummarizeSentimentAnalysisOutput = z.infer<
   typeof SummarizeSentimentAnalysisOutputSchema
 >;
+
 
 export const TranscribeVoiceToTextInputSchema = z.object({
   audioDataUri: z
