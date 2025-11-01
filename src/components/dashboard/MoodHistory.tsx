@@ -33,6 +33,9 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const toDate = (timestamp: any): Date => {
+  if (!timestamp) {
+    return new Date(NaN); // Return an invalid date
+  }
   if (timestamp instanceof Timestamp) {
       return timestamp.toDate();
   }
@@ -51,8 +54,10 @@ export default function MoodHistory() {
       return [];
     }
     
-    // Sort scores by date first
-    const sortedScores = [...moodScores].sort((a, b) => 
+    // Filter out items with invalid timestamps and sort
+    const validScores = [...moodScores].filter(item => !isNaN(toDate(item.timestamp).getTime()));
+
+    const sortedScores = validScores.sort((a, b) => 
         toDate(a.timestamp).getTime() - toDate(b.timestamp).getTime()
     );
 
