@@ -1,5 +1,6 @@
 'use client';
 import { cn } from '@/lib/utils';
+import { motion } from "framer-motion";
 
 export const BentoGrid = ({
   className,
@@ -34,22 +35,31 @@ export const BentoGridItem = ({
   icon?: React.ReactNode;
 }) => {
   return (
-    <div
-      className={cn(
-        'row-span-1 rounded-2xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-4 bg-black/[0.03] dark:bg-white/[0.03] border border-transparent justify-between flex flex-col space-y-4 glass-card',
-        className
-      )}
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.5 }}
+        className={cn(
+            "row-span-1 rounded-2xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-4 bg-card/80 dark:bg-black/[0.05] border border-transparent justify-between flex flex-col space-y-4",
+            "relative overflow-hidden transform-gpu",
+            "hover:-translate-y-2",
+            className
+        )}
     >
-      {header}
-      <div className="group-hover/bento:translate-x-2 transition duration-200">
-        {icon}
-        <div className="font-sans font-bold text-neutral-600 dark:text-neutral-200 mb-2 mt-2">
-          {title}
+        <div className="absolute inset-0 group-hover/bento:bg-gradient-to-br from-transparent to-primary/10 transition-all duration-300"></div>
+        {header}
+        <div className="group-hover/bento:translate-x-1 transition duration-200 relative z-10">
+            <div className="flex items-center gap-2">
+                {icon}
+                <div className="font-sans font-bold text-neutral-600 dark:text-neutral-200">
+                    {title}
+                </div>
+            </div>
+            <div className="font-sans font-normal text-neutral-600 text-xs dark:text-neutral-300 mt-2">
+                {description}
+            </div>
         </div>
-        <div className="font-sans font-normal text-neutral-600 text-xs dark:text-neutral-300">
-          {description}
-        </div>
-      </div>
-    </div>
+    </motion.div>
   );
 };
