@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, {
@@ -64,7 +65,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     );
   }, [activeSessionId, userProfile, firestore]);
 
-  const { data: messages = [] } = useCollection<ChatMessage>(messagesQuery);
+  const { data: messages } = useCollection<ChatMessage>(messagesQuery);
 
   const sessionsQuery = useMemoFirebase(() => {
     if (!userProfile || !firestore) return null;
@@ -74,7 +75,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     );
   }, [userProfile, firestore]);
 
-  const { data: sessions = [] } = useCollection<ChatSession>(sessionsQuery);
+  const { data: sessions } = useCollection<ChatSession>(sessionsQuery);
 
   const [moodSummary, setMoodSummary] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -83,7 +84,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   );
 
   useEffect(() => {
-    if (!activeSessionId && sessions.length > 0) {
+    if (!activeSessionId && sessions && sessions.length > 0) {
       setActiveSessionId(sessions[0].id);
     }
   }, [sessions, activeSessionId]);
@@ -145,7 +146,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         activeSessionId
       );
       
-      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const currentSession = sessions && sessions.find(s => s.id === activeSessionId);
       const isGenericTitle = currentSession?.title === 'New Conversation';
       
       const updatePayload: any = {
