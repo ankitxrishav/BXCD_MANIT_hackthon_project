@@ -1,4 +1,3 @@
-
 import {z} from 'genkit';
 
 export const SentimentAnalysisInputSchema = z.object({
@@ -35,9 +34,9 @@ export type PersonalizedRecommendationInput = z.infer<
 >;
 
 export const PersonalizedRecommendationOutputSchema = z.object({
-  recommendation: z
-    .string()
-    .describe('A personalized recommendation for the user.'),
+  recommendations: z
+    .array(z.string())
+    .describe('A list of personalized recommendations for the user. Contains multiple items for negative emotions, and a single item for positive/neutral emotions.'),
 });
 export type PersonalizedRecommendationOutput = z.infer<
   typeof PersonalizedRecommendationOutputSchema

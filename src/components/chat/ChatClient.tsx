@@ -55,11 +55,14 @@ export default function ChatClient() {
         emotion: sentimentResult.emotion,
         conversationContext,
       });
+      
+      // The first recommendation is the primary assistant message
+      const primaryResponse = recommendationResult.recommendations[0] || "I'm not sure what to say, but I'm here to listen.";
 
       const assistantMessage: ChatMessageType = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        text: recommendationResult.recommendation,
+        text: primaryResponse,
         timestamp: new Date(),
         sentiment: {
           score: sentimentResult.sentimentScore,
@@ -79,7 +82,7 @@ export default function ChatClient() {
         setMoodSummary(summaryResult.summary);
       }
 
-      setSuggestions(prev => [recommendationResult.recommendation, ...prev].slice(0, 4));
+      setSuggestions(recommendationResult.recommendations);
 
     } catch (error) {
       console.error('Error getting AI response:', error);
