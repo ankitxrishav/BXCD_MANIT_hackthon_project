@@ -8,8 +8,8 @@ import AnimatedWrapper from './AnimatedWrapper';
 
 export default function HeroSection() {
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden">
-        <div className="container px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <section className="container mx-auto py-24 md:py-32 relative overflow-hidden">
+        <div className="px-4 sm:px-6 lg:px-8 text-center relative z-10">
             
             <AnimatedGridPattern
                 className="[mask-image:radial-gradient(500px_circle_at_center,white,transparent)] inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
@@ -54,12 +54,13 @@ export default function HeroSection() {
                 <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
                     <Image 
-                        src="/img/main.png"
+                        src="https://picsum.photos/seed/hero-chat/1200/800"
                         alt="Emodash application interface"
                         width={1200}
                         height={800}
                         className="rounded-2xl mx-auto glass-card p-2 shadow-2xl opacity-70"
                         priority
+                        data-ai-hint="hologram chat"
                     />
                 </div>
             </AnimatedWrapper>
