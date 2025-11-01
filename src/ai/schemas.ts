@@ -61,22 +61,3 @@ export const SummarizeSentimentAnalysisOutputSchema = z.object({
 export type SummarizeSentimentAnalysisOutput = z.infer<
   typeof SummarizeSentimentAnalysisOutputSchema
 >;
-
-
-export const TranscribeVoiceToTextInputSchema = z.object({
-  audioDataUri: z
-    .string()
-    .describe(
-      "A voice recording, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-});
-export type TranscribeVoiceToTextInput = z.infer<
-  typeof TranscribeVoiceToTextInputSchema
->;
-
-export const TranscribeVoiceToTextOutputSchema = z.object({
-  transcription: z.string().describe('The transcribed text from the audio.'),
-});
-export type TranscribeVoiceToTextOutput = z.infer<
-  typeof TranscribeVoiceToTextOutputSchema
->;

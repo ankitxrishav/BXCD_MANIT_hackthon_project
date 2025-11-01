@@ -31,7 +31,6 @@ export default function ChatClient() {
     setIsLoading(true);
     
     // Optimistically add user message to UI
-    const tempUserMessageId = `user-${Date.now()}`;
     const userMessage: Omit<ChatMessageType, 'id'|'timestamp'> = {
       role: 'user',
       text,
@@ -45,14 +44,16 @@ export default function ChatClient() {
       // 1. Analyze sentiment and get a recommendation
       const sentimentResult = await analyzeSentiment({ text });
       
-      setLatestSentiment({
+      const currentSentiment = {
           emotion: sentimentResult.emotion,
-          score: sentimentResult.score
-      });
-      addMoodEntry({ emotion: sentimentResult.emotion, score: sentimentResult.score });
+          score: sentimentResult.sentimentScore
+      };
+
+      setLatestSentiment(currentSentiment);
+      addMoodEntry(currentSentiment);
       
       // Update the user's message with the detected sentiment
-      updateMessage(activeSessionId, userMessageId, { sentiment: sentimentResult });
+      updateMessage(activeSessionId, userMessageId, { sentiment: currentSentiment });
 
       // 2. Get AI response based on context
       const conversationContext = [...messages, { ...userMessage, id: userMessageId, timestamp: new Date() }]
@@ -76,7 +77,7 @@ export default function ChatClient() {
       await addMessage(assistantMessage, 'assistant');
 
       // 4. Update dashboard UI elements
-      const sentimentData = [...messages, { ...userMessage, id: userMessageId, timestamp: new Date(), sentiment: sentimentResult }]
+      const sentimentData = [...messages, { ...userMessage, id: userMessageId, timestamp: new Date(), sentiment: currentSentiment }]
         .filter(m => m.sentiment)
         .map(m => ({ emotion: m.sentiment!.emotion, score: m.sentiment!.score, text: m.text }));
       
@@ -101,8 +102,8 @@ export default function ChatClient() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-        <div className="md:col-span-2 flex flex-1 flex-col overflow-hidden rounded-xl border bg-card/80 backdrop-blur-xl shadow-lg h-[75vh]">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start p-6">
+        <div className="md:col-span-2 flex flex-1 flex-col overflow-hidden rounded-xl border bg-card/80 backdrop-blur-xl shadow-lg h-[calc(80vh-3rem)]">
             <ChatMessages messages={messages} isLoading={isLoading} />
             <div className="border-t p-4 bg-background/50">
                 <ChatInput onSend={handleSend} isLoading={isLoading} />
