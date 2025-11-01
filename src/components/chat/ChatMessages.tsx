@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BrainCircuit } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
@@ -48,13 +49,18 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
             )}
             <div
               className={cn(
-                'max-w-xs md:max-w-md rounded-lg px-4 py-2 text-sm',
+                'max-w-xs md:max-w-md rounded-lg px-4 py-2 text-sm shadow-sm',
                 message.role === 'user'
                   ? 'bg-primary text-primary-foreground rounded-br-none'
-                  : 'bg-muted text-muted-foreground rounded-bl-none'
+                  : 'bg-card border rounded-bl-none'
               )}
             >
               <p className="whitespace-pre-wrap">{message.text}</p>
+               {message.timestamp && (
+                <p className="text-xs text-right mt-1 text-foreground/50">
+                    {formatDistanceToNow(message.timestamp.toDate(), { addSuffix: true })}
+                </p>
+               )}
             </div>
             {message.role === 'user' && (
               <Avatar className="h-8 w-8">

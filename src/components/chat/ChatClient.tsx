@@ -1,65 +1,131 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import type { ChatMessage } from '@/lib/types';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { ChatMessage, ChatSession } from '@/lib/types';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import { getPersonalizedRecommendation } from '@/ai/flows/personalized-recommendations';
+import { analyzeSentiment } from '@/ai/flows/sentiment-analysis';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase/firebase';
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  setDoc,
+  query,
+  orderBy,
+  limit,
+} from 'firebase/firestore';
+import { useCollection } from '@/lib/firebase/hooks/useCollection';
+import { useDocument } from '@/lib/firebase/hooks/useDocument';
+
+const CHAT_SESSION_ID = 'current_chat'; // For simplicity, using a single chat session
 
 export default function ChatClient() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'init',
-      role: 'assistant',
-      text: "Hello! How are you feeling today?",
-      timestamp: Date.now(),
-    },
-  ]);
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = async (text: string) => {
-    if (!text.trim()) return;
+  const chatSessionRef = useMemo(() => {
+    if (!user) return null;
+    return doc(db, 'users', user.uid, 'chatSessions', CHAT_SESSION_ID);
+  }, [user]);
 
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
+  const { data: chatSession } = useDocument<ChatSession>(chatSessionRef);
+
+  const messagesRef = useMemo(() => {
+    if (!chatSessionRef) return null;
+    return query(
+      collection(chatSessionRef, 'chatMessages'),
+      orderBy('timestamp', 'asc'),
+      limit(50)
+    );
+  }, [chatSessionRef]);
+
+  const { data: messages, loading: messagesLoading } = useCollection<ChatMessage>(messagesRef);
+
+  const createSessionIfNeeded = useCallback(async () => {
+    if (user && !chatSession) {
+      await setDoc(chatSessionRef!, {
+        userId: user.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        title: 'Current Session',
+      });
+      // Add initial assistant message
+      const initialMsgRef = collection(chatSessionRef!, 'chatMessages');
+      await addDoc(initialMsgRef, {
+          role: 'assistant',
+          text: 'Hello! How are you feeling today?',
+          timestamp: serverTimestamp(),
+      });
+    }
+  }, [user, chatSession, chatSessionRef]);
+
+  useEffect(() => {
+    createSessionIfNeeded();
+  }, [createSessionIfNeeded]);
+
+  const handleSend = async (text: string) => {
+    if (!text.trim() || !user || !chatSessionRef) return;
+
+    const userMessage: Omit<ChatMessage, 'id'> = {
       role: 'user',
       text,
-      timestamp: Date.now(),
+      timestamp: serverTimestamp() as any,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
-      // Create a conversation context
-      const conversationContext = [...messages, userMessage]
-        .slice(-5) // Use last 5 messages for context
+      const messagesCollectionRef = collection(chatSessionRef, 'chatMessages');
+      
+      // 1. Add user message to Firestore
+      const userMessageRef = await addDoc(messagesCollectionRef, userMessage);
+
+      // 2. Analyze sentiment
+      const sentimentResult = await analyzeSentiment({ text });
+      
+      // 3. Update user message with sentiment
+      await setDoc(userMessageRef, { sentiment: {
+          score: sentimentResult.sentimentScore,
+          emotion: sentimentResult.emotion
+      } }, { merge: true });
+
+      // 4. Get personalized recommendation
+      const conversationContext = (messages ?? [])
+        .slice(-5)
         .map(m => `${m.role}: ${m.text}`)
         .join('\n');
-      
-      const res = await getPersonalizedRecommendation({
-          // This is a placeholder for a more sophisticated emotion detection
-          emotion: 'neutral', 
-          conversationContext: conversationContext,
+
+      const recommendationResult = await getPersonalizedRecommendation({
+        emotion: sentimentResult.emotion,
+        conversationContext: conversationContext,
       });
 
-      const assistantMessage: ChatMessage = {
-        id: `assistant-${Date.now()}`,
+      // 5. Add assistant message to Firestore
+      const assistantMessage: Omit<ChatMessage, 'id'> = {
         role: 'assistant',
-        text: res.recommendation,
-        timestamp: Date.now(),
+        text: recommendationResult.recommendation,
+        timestamp: serverTimestamp() as any,
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      await addDoc(messagesCollectionRef, assistantMessage);
+      
+      // 6. Update session updated_at
+      await setDoc(chatSessionRef, { updatedAt: serverTimestamp() }, { merge: true });
+
     } catch (error) {
-      console.error('Error getting recommendation:', error);
-      const errorMessage: ChatMessage = {
-        id: `error-${Date.now()}`,
+      console.error('Error in chat flow:', error);
+      const errorMessage:  Omit<ChatMessage, 'id'> = {
         role: 'assistant',
         text: 'I seem to be having trouble connecting. Please try again in a moment.',
-        timestamp: Date.now(),
+        timestamp: serverTimestamp() as any,
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      if (chatSessionRef) {
+          await addDoc(collection(chatSessionRef, 'chatMessages'), errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +133,7 @@ export default function ChatClient() {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <ChatMessages messages={messages} isLoading={isLoading} />
+      <ChatMessages messages={messages || []} isLoading={isLoading || messagesLoading} />
       <div className="border-t p-4 bg-background">
         <ChatInput onSend={handleSend} isLoading={isLoading} />
       </div>

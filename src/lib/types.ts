@@ -1,12 +1,13 @@
 
 import type { User as FirebaseUser } from 'firebase/auth';
+import type { Timestamp } from 'firebase/firestore';
 
 export type UserProfile = {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  createdAt: number;
+  createdAt: number | Timestamp;
   settings?: UserSettings;
 };
 
@@ -16,23 +17,22 @@ export type UserSettings = {
 };
 
 export type ChatMessage = {
-  id: string;
+  id?: string;
   text: string;
   role: 'user' | 'assistant';
-  timestamp: number;
+  timestamp: Timestamp;
   sentiment?: {
     score: number;
-    label: string;
+    emotion: string;
   };
 };
 
 export type ChatSession = {
-  id: string;
+  id?: string;
   userId: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   title: string;
-  messages: ChatMessage[];
 };
 
 export type MoodScore = {

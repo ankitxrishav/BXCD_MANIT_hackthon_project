@@ -39,7 +39,7 @@ export const useAuthProvider = (): AuthContextType => {
             email: firebaseUser.email,
             displayName: firebaseUser.displayName,
             photoURL: firebaseUser.photoURL,
-            createdAt: Date.now(),
+            createdAt: serverTimestamp() as any,
             settings: {
               enableSentimentAnalysis: true,
               dataRetentionPeriod: '90d',
