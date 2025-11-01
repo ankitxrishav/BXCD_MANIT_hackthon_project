@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { ChatMessage as ChatMessageType } from '@/lib/types';
+import { ChatMessage as ChatMessageType, UserProfile } from '@/lib/types';
 import ChatMessages from './ChatMessages';
 import ChatInput from './ChatInput';
 import { getPersonalizedRecommendation } from '@/ai/flows/personalized-recommendations';
@@ -10,26 +9,29 @@ import { analyzeSentiment } from '@/ai/flows/sentiment-analysis';
 import { useChat } from '@/context/ChatProvider';
 import { summarizeSentimentAnalysis } from '@/ai/flows/summarize-sentiment-analysis';
 import SuggestedTopics from './SuggestedTopics';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ChatClient() {
+  const { userProfile } = useAuth();
   const { messages, addMessage, startNewSession, setMoodSummary, setSuggestions, setLatestSentiment } = useChat();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // If there are no messages, start a new session with an initial message.
-    if (messages.length === 0) {
+    if (messages.length === 0 && userProfile) {
       startNewSession('Hello! How are you feeling today?');
     }
-  }, [messages.length, startNewSession]);
+  }, [messages.length, startNewSession, userProfile]);
 
   const handleSend = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+    if (!text.trim() || isLoading || !userProfile) return;
 
     const userMessage: ChatMessageType = {
       id: `user-${Date.now()}`,
       role: 'user',
       text,
       timestamp: new Date(),
+      userId: userProfile.uid,
     };
 
     addMessage(userMessage);
@@ -40,7 +42,6 @@ export default function ChatClient() {
       // Analyze sentiment and get a recommendation
       const sentimentResult = await analyzeSentiment({ text });
       
-      // Update the dashboard immediately with the latest sentiment
       setLatestSentiment({
           emotion: sentimentResult.emotion,
           score: sentimentResult.sentimentScore
@@ -56,7 +57,6 @@ export default function ChatClient() {
         conversationContext,
       });
       
-      // The first recommendation is the primary assistant message
       const primaryResponse = recommendationResult.recommendations[0] || "I'm not sure what to say, but I'm here to listen.";
 
       const assistantMessage: ChatMessageType = {
@@ -64,6 +64,7 @@ export default function ChatClient() {
         role: 'assistant',
         text: primaryResponse,
         timestamp: new Date(),
+        userId: 'assistant',
         sentiment: {
           score: sentimentResult.sentimentScore,
           emotion: sentimentResult.emotion,
@@ -91,6 +92,7 @@ export default function ChatClient() {
         role: 'assistant',
         text: 'Sorry, I encountered an error. Please try again.',
         timestamp: new Date(),
+        userId: 'assistant',
       };
       addMessage(errorMessage);
     } finally {

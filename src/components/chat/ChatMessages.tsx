@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRef, useEffect } from 'react';
@@ -17,21 +16,24 @@ interface ChatMessagesProps {
 export default function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { userProfile } = useAuth();
-  const userInitial = userProfile?.displayName?.charAt(0) || 'U';
+  const userInitial =
+    userProfile?.displayName?.charAt(0) || userProfile?.email?.charAt(0) || 'U';
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-        const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
-        if (viewport) {
-            viewport.scrollTop = viewport.scrollHeight;
-        }
+      const viewport = scrollAreaRef.current.querySelector(
+        'div[data-radix-scroll-area-viewport]'
+      );
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
     }
   }, [messages, isLoading]);
 
   return (
     <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
       <div className="space-y-6">
-        {messages.map((message) => (
+        {messages.map(message => (
           <div
             key={message.id}
             className={cn(
@@ -72,9 +74,9 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
               </AvatarFallback>
             </Avatar>
             <div className="bg-muted rounded-2xl px-4 py-3 flex items-center space-x-2">
-                <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.3s]"></span>
-                <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.15s]"></span>
-                <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse"></span>
+              <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.3s]"></span>
+              <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.15s]"></span>
+              <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse"></span>
             </div>
           </div>
         )}

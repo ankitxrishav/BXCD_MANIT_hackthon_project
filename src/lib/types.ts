@@ -1,8 +1,6 @@
-
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Timestamp } from 'firebase/firestore';
 
-// Note: This is a mocked user. In a real app, this would come from a database.
 export type UserProfile = {
   uid: string;
   email: string | null;
@@ -25,14 +23,15 @@ export type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
   text: string;
-  timestamp: Date;
+  timestamp: Date | Timestamp;
+  userId: string;
   sentiment?: Sentiment;
 };
 
 export type ChatSession = {
   id: string;
   userId: string;
-  updatedAt: Date;
+  updatedAt: Date | Timestamp;
   title: string;
 };
 
@@ -41,10 +40,10 @@ export type MoodScore = {
   score: number;
 };
 
-export type AuthContextType = {
+export interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
-};
+}

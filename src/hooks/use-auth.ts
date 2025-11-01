@@ -1,10 +1,33 @@
 'use client';
 
-import { useState, useEffect, useContext, createContext, useCallback } from 'react';
-import type { AuthContextType, UserProfile, MockUser } from '@/lib/types';
+import {
+  useState,
+  useEffect,
+  useContext,
+  createContext,
+  useCallback,
+} from 'react';
+import type { AuthContextType, UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import {
+  useUser,
+  useAuth as useFirebaseAuth,
+  useFirestore,
+  useDoc,
+  useMemoFirebase,
+} from '@/firebase';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  User as FirebaseUser,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
@@ -14,78 +37,71 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// A mock user for demonstration purposes
-const MOCK_USER: MockUser = {
-  uid: 'mock-user-123',
-  email: 'user@example.com',
-  displayName: 'Alex Doe',
-  photoURL: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-};
-
-const MOCK_USER_PROFILE: UserProfile = {
-    uid: 'mock-user-123',
-    email: 'user@example.com',
-    displayName: 'Alex Doe',
-    photoURL: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-    settings: {
-        enableSentimentAnalysis: true,
-        dataRetentionPeriod: '90d'
-    }
-};
-
-const handleSignIn = (router: any, setUser: any, setUserProfile: any, setLoading: any) => {
-    setLoading(true);
-    // Simulate a successful login
-    return new Promise(resolve => setTimeout(resolve, 500)).then(() => {
-        const sessionUser = JSON.stringify(MOCK_USER);
-        sessionStorage.setItem('mockUser', sessionUser);
-        setUser(MOCK_USER);
-        setUserProfile(MOCK_USER_PROFILE);
-        router.push('/dashboard');
-        setLoading(false);
-    });
-};
-
-export const useAuthProvider = (): AuthContextType => {
-  const [user, setUser] = useState<MockUser | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+export const useFirebaseAuthProvider = (): AuthContextType => {
+  const { user, isUserLoading } = useUser();
+  const auth = useFirebaseAuth();
+  const firestore = useFirestore();
   const router = useRouter();
 
+  const userProfileRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
 
-  useEffect(() => {
-    // Simulate checking auth state
-    setLoading(true);
-    const sessionUser = sessionStorage.getItem('mockUser');
-    if (sessionUser) {
-      const parsedUser = JSON.parse(sessionUser);
-      setUser(parsedUser);
-      setUserProfile(MOCK_USER_PROFILE);
-    }
-    setLoading(false);
-  }, []);
+  const { data: userProfile, isLoading: isProfileLoading } =
+    useDoc<UserProfile>(userProfileRef);
+
+  const loading = isUserLoading || isProfileLoading;
+
+  const handleUserAuth = useCallback(
+    async (firebaseUser: FirebaseUser) => {
+      if (!firestore) return;
+      const userRef = doc(firestore, 'users', firebaseUser.uid);
+      const profile: UserProfile = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
+        settings: {
+            enableSentimentAnalysis: true,
+            dataRetentionPeriod: '90d'
+        }
+      };
+
+      await setDoc(userRef, profile, { merge: true });
+      router.push('/dashboard');
+    },
+    [firestore, router]
+  );
 
   const signInWithGoogle = async () => {
-    await handleSignIn(router, setUser, setUserProfile, setLoading);
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await handleUserAuth(result.user);
+    } catch (error) {
+      console.error('Google sign-in error', error);
+    }
   };
 
   const signInWithEmail = async (email: string, pass: string) => {
-    // Here you can add mock validation if needed
-    console.log(`Signing in with Email: ${email}, Pass: ${pass}`);
-    await handleSignIn(router, setUser, setUserProfile, setLoading);
-  }
-
-  const logout = async () => {
-    setLoading(true);
-    // Simulate a logout
-    await new Promise(resolve => setTimeout(resolve, 500));
-    sessionStorage.removeItem('mockUser');
-    setUser(null);
-    setUserProfile(null);
-    router.push('/login');
-    // A small delay to allow router to push before setting loading to false
-    setTimeout(() => setLoading(false), 100);
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, pass);
+      await handleUserAuth(result.user);
+    } catch (error) {
+      console.error('Email sign-in error', error);
+      throw error;
+    }
   };
 
-  return { user, userProfile, loading, signInWithGoogle, signInWithEmail, logout };
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error', error);
+    }
+  };
+
+  return { userProfile, loading, signInWithGoogle, signInWithEmail, logout };
 };
