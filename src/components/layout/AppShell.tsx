@@ -4,7 +4,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth.tsx';
+import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Logo from './Logo';
 import { cn } from '@/lib/utils';
-import { Settings, LogOut, User as UserIcon } from 'lucide-react';
+import { User as UserIcon, LogOut } from 'lucide-react';
 import ChatBubble from '../chat/ChatBubble';
 
 const navLinks = [
@@ -33,7 +33,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-4 z-50 mx-4">
-        <div className="container flex h-16 items-center rounded-2xl border bg-background/80 backdrop-blur-sm shadow-lg">
+        <div className="container flex h-16 items-center rounded-2xl border bg-card/60 backdrop-blur-xl shadow-lg">
           <div className="mr-auto ml-4">
             <Logo />
           </div>

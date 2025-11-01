@@ -5,40 +5,31 @@
 
 @layer base {
   :root {
-    --background: 220 40% 5%;
-    --foreground: 210 40% 98%;
-
-    --card: 220 40% 10%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 220 40% 4%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 220 40% 10%;
-
-    --secondary: 220 40% 15%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 220 40% 15%;
-    --muted-foreground: 210 40% 60%;
-
-    --accent: 220 40% 20%;
-    --accent-foreground: 210 40% 98%;
-
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
-
-    --border: 220 40% 15%;
-    --input: 220 40% 15%;
-    --ring: 210 40% 98%;
-
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
     --radius: 0.75rem;
 
-    --user-message: 28 100% 63%; /* Orange */
-    --user-message-foreground: 0 0% 100%;
-    --assistant-message: 220 40% 15%;
-    --assistant-message-foreground: 210 40% 98%;
+    --user-message: 215 27.9% 16.9%;
+    --user-message-foreground: 210 20% 98%;
+    --assistant-message: 215 20% 30%;
+    --assistant-message-foreground: 210 20% 98%;
   }
 
   .light {
@@ -48,22 +39,22 @@
     --card-foreground: 200 20% 10%;
     --popover: 200 20% 100%;
     --popover-foreground: 200 20% 10%;
-    --primary: 200 20% 10%;
-    --primary-foreground: 200 20% 98%;
-    --secondary: 200 20% 95%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 210 20% 95%;
     --secondary-foreground: 200 20% 10%;
-    --muted: 200 20% 95%;
+    --muted: 210 20% 95%;
     --muted-foreground: 200 20% 40%;
-    --accent: 200 20% 90%;
+    --accent: 210 20% 90%;
     --accent-foreground: 200 20% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 200 20% 90%;
-    --input: 200 20% 90%;
-    --ring: 200 20% 10%;
-    --user-message: 28 100% 63%;
-    --user-message-foreground: 0 0% 100%;
-    --assistant-message: 200 20% 95%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 262.1 83.3% 57.8%;
+    --user-message: 262.1 83.3% 57.8%;
+    --user-message-foreground: 0 0% 98%;
+    --assistant-message: 210 20% 95%;
     --assistant-message-foreground: 200 20% 10%;
   }
 }
@@ -77,57 +68,11 @@
     overflow-x: hidden;
   }
 
-  .light body {
-    animation: background-pan 30s linear infinite;
-    background: linear-gradient(
-      90deg,
-      hsl(190, 80%, 97%),
-      hsl(220, 80%, 97%),
-      hsl(280, 80%, 97%),
-      hsl(190, 80%, 97%)
-    );
-    background-size: 200% 100%;
-  }
-  
-  .dark body {
-    animation: background-pan 30s linear infinite;
-    background: linear-gradient(
-      90deg,
-      hsl(220, 15%, 8%),
-      hsl(260, 15%, 8%),
-      hsl(220, 15%, 8%)
-    );
-    background-size: 200% 100%;
-  }
-  
-  @keyframes background-pan {
-    0% {
-      background-position: 0% center;
-    }
-    100% {
-      background-position: -200% center;
-    }
-  }
-
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-white/5;
+    @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-lg;
   }
   
-  .glow::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: hsl(var(--primary));
-    filter: blur(40px);
-    opacity: 0.15;
-    z-index: -1;
-    transition: opacity 0.3s;
-  }
-
-  .dark .glow::before {
-    opacity: 0.3;
+  .light .glass-card {
+    @apply bg-white/50 border-white/20;
   }
 }

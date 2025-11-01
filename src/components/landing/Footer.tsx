@@ -1,10 +1,10 @@
-
 import Logo from '@/components/layout/Logo';
+import Link from 'next/link';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
   return (
-    <footer className="border-t border-white/10">
+    <footer className="border-t border-white/10 mt-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="space-y-4">
@@ -17,7 +17,7 @@ export default function Footer() {
                     <div className="space-y-3">
                         <h4 className="font-semibold">Product</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><a href="#" className="hover:text-primary">Features</a></li>
+                            <li><Link href="/features" className="hover:text-primary">Features</Link></li>
                             <li><a href="#" className="hover:text-primary">Pricing</a></li>
                             <li><a href="#" className="hover:text-primary">Security</a></li>
                         </ul>
@@ -25,9 +25,9 @@ export default function Footer() {
                     <div className="space-y-3">
                         <h4 className="font-semibold">Company</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><a href="#" className="hover:text-primary">About Us</a></li>
+                            <li><Link href="/about" className="hover:text-primary">About Us</Link></li>
                             <li><a href="#" className="hover:text-primary">Careers</a></li>
-                            <li><a href="#" className="hover:text-primary">Contact</a></li>
+                            <li><Link href="/contact" className="hover:text-primary">Contact</Link></li>
                         </ul>
                     </div>
                     <div className="space-y-3">
