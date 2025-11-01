@@ -69,7 +69,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   const allMessagesQuery = useMemoFirebase(() => {
     if (!userProfile?.uid || !firestore) return null;
-    // Use a collectionGroup query to get all messages for the user across all sessions
     return query(
       collectionGroup(firestore, 'messages'),
       where('userId', '==', userProfile.uid),
@@ -81,7 +80,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   const moodScores = useMemo(() => {
     if (!allMessagesData) return [];
-    // Filter messages to ensure they belong to the current user before extracting mood scores
     return allMessagesData
       .filter(m => m.userId === userProfile?.uid && m.sentiment)
       .map(m => ({
@@ -104,7 +102,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       if (!activeSessionId && sessions.length > 0) {
         setActiveSessionId(sessions[0].id);
       } else if (activeSessionId && !sessions.some(s => s.id === activeSessionId)) {
-        // If active session was deleted or is no longer in the list
         setActiveSessionId(sessions.length > 0 ? sessions[0].id : null);
       } else if (!activeSessionId && sessions.length === 0) {
         startNewSession('Hello! How are you feeling today?');
