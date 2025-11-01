@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { format, subDays } from 'date-fns';
+import { format, subDays, startOfDay } from 'date-fns';
 import {
   Card,
   CardContent,
@@ -17,9 +17,8 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useAuth } from "@/hooks/use-auth";
-import { useCollection } from "@/lib/firebase/hooks/useCollection";
-import { collectionGroup, query, where, orderBy, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase/firebase";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { collection, query, where, orderBy, Timestamp } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
 
 const chartConfig = {
@@ -31,50 +30,57 @@ const chartConfig = {
 
 export default function MoodChart() {
   const { user } = useAuth();
-  const sevenDaysAgo = useMemo(() => subDays(new Date(), 7), []);
+  const { firestore } = useFirebase();
+  
+  const sevenDaysAgo = useMemo(() => startOfDay(subDays(new Date(), 6)), []);
 
-  const sentimentQuery = useMemo(() => {
-    if (!user) return null;
+  const sentimentQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
     return query(
-      collectionGroup(db, 'chatMessages'),
+      collection(firestore, 'users', user.uid, 'chatMessages'),
       where('sentiment', '!=', null),
       where('timestamp', '>=', Timestamp.fromDate(sevenDaysAgo)),
       orderBy('timestamp', 'desc')
     );
-  }, [user, sevenDaysAgo]);
+  }, [user, firestore, sevenDaysAgo]);
 
-  const { data: sentimentData, loading } = useCollection(sentimentQuery);
+  const { data: sentimentData, isLoading } = useCollection(sentimentQuery);
 
   const chartData = useMemo(() => {
     const dailyScores: { [key: string]: { totalScore: number; count: number } } = {};
+    const daysOfWeek = Array.from({ length: 7 }, (_, i) => {
+        const d = subDays(new Date(), i);
+        return format(d, 'E');
+    }).reverse();
+
+    daysOfWeek.forEach(day => {
+        dailyScores[day] = { totalScore: 0, count: 0 };
+    });
 
     sentimentData?.forEach((entry: any) => {
       if (entry.sentiment && entry.timestamp) {
         const date = entry.timestamp.toDate();
-        const day = format(date, 'E'); // 'Mon', 'Tue', etc.
+        const day = format(date, 'E'); 
         const score = (entry.sentiment.score + 1) * 5; // Scale from -1..1 to 0..10
 
-        if (!dailyScores[day]) {
-          dailyScores[day] = { totalScore: 0, count: 0 };
+        if (dailyScores[day]) {
+            dailyScores[day].totalScore += score;
+            dailyScores[day].count += 1;
         }
-        dailyScores[day].totalScore += score;
-        dailyScores[day].count += 1;
       }
     });
-
-    const daysOfWeek = Array.from({ length: 7 }, (_, i) => format(subDays(new Date(), i), 'E')).reverse();
     
     return daysOfWeek.map(day => {
         const data = dailyScores[day];
         return {
             day,
-            score: data ? Math.round(data.totalScore / data.count) : 0,
+            score: data && data.count > 0 ? Math.round(data.totalScore / data.count) : 0,
         };
     });
 
   }, [sentimentData]);
   
-  if (loading) {
+  if (isLoading) {
       return (
           <Card>
               <CardHeader>

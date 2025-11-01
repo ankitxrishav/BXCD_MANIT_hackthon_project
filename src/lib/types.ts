@@ -7,7 +7,7 @@ export type UserProfile = {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  createdAt: number | Timestamp;
+  createdAt: Timestamp;
   settings?: UserSettings;
 };
 
@@ -18,8 +18,8 @@ export type UserSettings = {
 
 export type ChatMessage = {
   id?: string;
-  text: string;
   role: 'user' | 'assistant';
+  text: string;
   timestamp: Timestamp;
   sentiment?: {
     score: number;

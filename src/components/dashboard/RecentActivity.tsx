@@ -1,7 +1,6 @@
 
 'use client';
 
-import { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -9,34 +8,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MessageSquare, User } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useCollection } from "@/lib/firebase/hooks/useCollection";
-import { collection, query, where, orderBy, limit } from "firebase/firestore";
-import { db } from "@/lib/firebase/firebase";
+import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from "../ui/skeleton";
 import type { ChatSession } from "@/lib/types";
-import { useDocument } from "@/lib/firebase/hooks/useDocument";
-
-const CHAT_SESSION_ID = 'current_chat';
 
 export default function RecentActivity() {
   const { user } = useAuth();
+  const { firestore } = useFirebase();
 
-  const chatSessionRef = useMemo(() => {
-    if (!user) return null;
-    return collection(db, 'users', user.uid, 'chatSessions');
-  }, [user]);
-
-  const recentSessionsQuery = useMemo(() => {
-      if (!chatSessionRef) return null;
+  const recentSessionsQuery = useMemoFirebase(() => {
+      if (!user || !firestore) return null;
+      const chatSessionRef = collection(firestore, 'users', user.uid, 'chatSessions');
       return query(chatSessionRef, orderBy("updatedAt", "desc"), limit(5));
-  }, [chatSessionRef])
+  }, [user, firestore])
 
-  const { data: recentSessions, loading } = useCollection<ChatSession>(recentSessionsQuery);
+  const { data: recentSessions, isLoading } = useCollection<ChatSession>(recentSessionsQuery);
 
-  if (loading) {
+  if (isLoading) {
       return (
           <Card>
               <CardHeader>
@@ -74,9 +66,11 @@ export default function RecentActivity() {
                 </div>
                 <div className="ml-4 flex-1">
                   <p className="text-sm font-medium leading-none">{session.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Last activity {formatDistanceToNow(session.updatedAt.toDate(), { addSuffix: true })}
-                  </p>
+                  {session.updatedAt && (
+                    <p className="text-sm text-muted-foreground">
+                      Last activity {formatDistanceToNow(session.updatedAt.toDate(), { addSuffix: true })}
+                    </p>
+                  )}
                 </div>
               </div>
             ))

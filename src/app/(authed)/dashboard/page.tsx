@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const { userProfile } = useAuth();
-  const firstName = userProfile?.displayName?.split(' ')[0] || 'there';
+  const firstName = userProfile?.displayName?.split(' ')[0] || userProfile?.email || 'there';
 
   if (!userProfile) {
     return (
