@@ -70,7 +70,8 @@ export const useFirebaseAuthProvider = (): AuthContextType => {
         },
       };
       
-      setDocumentNonBlocking(userRef, profile, { merge: true });
+      // Set the user document, merging with existing data just in case
+      await setDocumentNonBlocking(userRef, profile, { merge: true });
 
       router.push('/dashboard');
     },
