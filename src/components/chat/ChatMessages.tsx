@@ -58,7 +58,7 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
               <p className="whitespace-pre-wrap">{message.text}</p>
                {message.timestamp && (
                 <p className="text-xs text-right mt-1 text-foreground/50">
-                    {formatDistanceToNow(message.timestamp.toDate(), { addSuffix: true })}
+                    {formatDistanceToNow(message.timestamp, { addSuffix: true })}
                 </p>
                )}
             </div>

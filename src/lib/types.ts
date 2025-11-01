@@ -2,12 +2,12 @@
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Timestamp } from 'firebase/firestore';
 
+// Note: This is a mocked user. In a real app, this would come from a database.
 export type UserProfile = {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  createdAt: Timestamp;
   settings?: UserSettings;
 };
 
@@ -17,11 +17,10 @@ export type UserSettings = {
 };
 
 export type ChatMessage = {
-  id?: string;
-  userId?: string; // Add userId to associate message with user for collection group queries
+  id: string;
   role: 'user' | 'assistant';
   text: string;
-  timestamp: Timestamp;
+  timestamp: Date; // Changed from Timestamp
   sentiment?: {
     score: number;
     emotion: string;
@@ -29,10 +28,9 @@ export type ChatMessage = {
 };
 
 export type ChatSession = {
-  id?: string;
+  id: string;
   userId: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  updatedAt: Date; // Changed from Timestamp
   title: string;
 };
 
@@ -41,8 +39,17 @@ export type MoodScore = {
   score: number;
 };
 
+// This is a mocked Firebase User object.
+export type MockUser = {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL: string | null;
+}
+
+
 export type AuthContextType = {
-  user: FirebaseUser | null;
+  user: MockUser | null;
   userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;

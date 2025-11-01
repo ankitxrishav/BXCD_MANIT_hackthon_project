@@ -9,48 +9,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MessageSquare } from "lucide-react";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
-import { formatDistanceToNow } from 'date-fns';
-import { Skeleton } from "../ui/skeleton";
+import { formatDistanceToNow, subHours } from 'date-fns';
 import type { ChatSession } from "@/lib/types";
 
-interface RecentActivityProps {
-  userId: string;
-}
+// Mock data for recent sessions
+const MOCK_SESSIONS: ChatSession[] = [
+    { id: '1', userId: 'mock-user-123', title: 'Evening Reflection', updatedAt: subHours(new Date(), 2) },
+    { id: '2', userId: 'mock-user-123', title: 'Feeling a bit down', updatedAt: subHours(new Date(), 20) },
+    { id: '3', userId: 'mock-user-123', title: 'A good day', updatedAt: subHours(new Date(), 48) },
+];
 
-export default function RecentActivity({ userId }: RecentActivityProps) {
-  const { firestore } = useFirebase();
 
-  const recentSessionsQuery = useMemoFirebase(() => {
-      if (!userId || !firestore) return null;
-      const chatSessionRef = collection(firestore, 'users', userId, 'chatSessions');
-      return query(chatSessionRef, orderBy("updatedAt", "desc"), limit(5));
-  }, [userId, firestore])
-
-  const { data: recentSessions, isLoading } = useCollection<ChatSession>(recentSessionsQuery);
-
-  if (isLoading) {
-      return (
-          <Card>
-              <CardHeader>
-                  <Skeleton className="h-8 w-1/2" />
-                  <Skeleton className="h-4 w-2/3" />
-              </CardHeader>
-              <CardContent className="space-y-6">
-                  {[...Array(4)].map((_, i) => (
-                      <div key={i} className="flex items-start">
-                          <Skeleton className="h-8 w-8 rounded-full" />
-                          <div className="ml-4 flex-1 space-y-2">
-                              <Skeleton className="h-4 w-3/4" />
-                              <Skeleton className="h-4 w-1/4" />
-                          </div>
-                      </div>
-                  ))}
-              </CardContent>
-          </Card>
-      )
-  }
+export default function RecentActivity() {
+  const recentSessions = MOCK_SESSIONS;
 
   return (
     <Card>
@@ -70,7 +41,7 @@ export default function RecentActivity({ userId }: RecentActivityProps) {
                   <p className="text-sm font-medium leading-none">{session.title}</p>
                   {session.updatedAt && (
                     <p className="text-sm text-muted-foreground">
-                      Last activity {formatDistanceToNow(session.updatedAt.toDate(), { addSuffix: true })}
+                      Last activity {formatDistanceToNow(session.updatedAt, { addSuffix: true })}
                     </p>
                   )}
                 </div>

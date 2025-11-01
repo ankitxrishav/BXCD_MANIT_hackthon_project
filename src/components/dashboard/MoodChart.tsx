@@ -3,7 +3,7 @@
 
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
-import { format, subDays, startOfDay } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import {
   Card,
   CardContent,
@@ -16,10 +16,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
-import { collectionGroup, query, where, orderBy, Timestamp } from "firebase/firestore";
-import { Skeleton } from "../ui/skeleton";
-import type { ChatMessage } from "@/lib/types";
 
 const chartConfig = {
   score: {
@@ -28,81 +24,24 @@ const chartConfig = {
   },
 } as const;
 
-interface MoodChartProps {
-  userId: string;
+
+// Mock data for the mood chart
+const generateMockData = () => {
+    const data = [];
+    for (let i = 6; i >= 0; i--) {
+        const date = subDays(new Date(), i);
+        data.push({
+            day: format(date, 'E'),
+            score: Math.floor(Math.random() * 8) + 2, // Random score between 2 and 9
+        });
+    }
+    return data;
 }
 
-export default function MoodChart({ userId }: MoodChartProps) {
-  const { firestore } = useFirebase();
-  
-  const sevenDaysAgo = useMemo(() => startOfDay(subDays(new Date(), 6)), []);
 
-  const sentimentQuery = useMemoFirebase(() => {
-    if (!userId || !firestore) {
-      return null;
-    }
-    return query(
-      collectionGroup(firestore, 'chatMessages'),
-      where('userId', '==', userId),
-      where('sentiment', '!=', null),
-      where('timestamp', '>=', Timestamp.fromDate(sevenDaysAgo)),
-      orderBy('timestamp', 'desc')
-    );
-  }, [userId, firestore, sevenDaysAgo]);
-
-  const { data: sentimentData, isLoading } = useCollection<ChatMessage>(sentimentQuery);
-
-  const chartData = useMemo(() => {
-    const dailyScores: { [key: string]: { totalScore: number; count: number } } = {};
-    const daysOfWeek = Array.from({ length: 7 }, (_, i) => {
-        const d = subDays(new Date(), i);
-        return format(d, 'E');
-    }).reverse();
-
-    // Initialize all days to ensure the chart shows 7 days
-    daysOfWeek.forEach(day => {
-        dailyScores[day] = { totalScore: 0, count: 0 };
-    });
-
-    sentimentData?.forEach((entry: any) => {
-      if (entry.sentiment && entry.timestamp) {
-        const date = entry.timestamp.toDate();
-        const day = format(date, 'E'); 
-        // Scale from -1..1 to 0..10 for chart readability
-        const score = (entry.sentiment.score + 1) * 5; 
-
-        if (dailyScores[day]) {
-            dailyScores[day].totalScore += score;
-            dailyScores[day].count += 1;
-        }
-      }
-    });
-    
-    return daysOfWeek.map(day => {
-        const data = dailyScores[day];
-        return {
-            day,
-            score: data && data.count > 0 ? Math.round(data.totalScore / data.count) : 0,
-        };
-    });
-
-  }, [sentimentData]);
-
+export default function MoodChart() {
+  const chartData = useMemo(() => generateMockData(), []);
   const hasData = useMemo(() => chartData.some(d => d.score > 0), [chartData]);
-  
-  if (isLoading) {
-      return (
-          <Card>
-              <CardHeader>
-                  <Skeleton className="h-8 w-1/3" />
-                  <Skeleton className="h-4 w-1/2" />
-              </CardHeader>
-              <CardContent>
-                  <Skeleton className="h-64 w-full" />
-              </CardContent>
-          </Card>
-      )
-  }
 
   return (
     <Card>

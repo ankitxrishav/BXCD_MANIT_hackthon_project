@@ -36,10 +36,10 @@ export default function DashboardPage() {
       </div>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2">
-          <MoodChart userId={userProfile.uid} />
+          <MoodChart />
         </div>
         <div className="md:col-span-1">
-          <RecentActivity userId={userProfile.uid} />
+          <RecentActivity />
         </div>
       </div>
       <div>

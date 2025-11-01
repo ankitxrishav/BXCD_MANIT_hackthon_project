@@ -23,7 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SettingsPage() {
-  const { userProfile } = useAuth();
+  const { userProfile, logout } = useAuth();
   const { toast } = useToast();
 
   const [enableSentimentAnalysis, setEnableSentimentAnalysis] = useState(
@@ -34,7 +34,7 @@ export default function SettingsPage() {
   );
 
   const handleSaveChanges = () => {
-    // In a real app, you would save these to Firestore
+    // In a real app, you would save these to a database
     console.log({ enableSentimentAnalysis, dataRetentionPeriod });
     toast({
       title: 'Settings Saved',
@@ -43,13 +43,15 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = () => {
-    // In a real app, this would trigger a Firebase function to delete all user data
+    // In a real app, this would trigger a process to delete all user data
     console.log('Deleting account...');
     toast({
       variant: 'destructive',
       title: 'Account Deletion Initiated',
       description: 'Your account and data will be permanently deleted.',
     });
+    // For mock purposes, just log out
+    logout();
   };
   
   if (!userProfile) {
