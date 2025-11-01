@@ -1,75 +1,350 @@
-
 {
   "entities": {
     "User": {
-      "collection": "users",
-      "description": "Stores user profile information.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the Mindwell application.",
       "properties": {
-        "uid": "string (document ID)",
-        "email": "string",
-        "displayName": "string",
-        "photoURL": "string",
-        "createdAt": "timestamp",
-        "settings": {
-          "enableSentimentAnalysis": "boolean",
-          "dataRetentionPeriod": "string ('30d', '90d', '1y', 'forever')"
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "User's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "User's last name."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "profilePicture": {
+          "type": "string",
+          "description": "URL of the user's profile picture.",
+          "format": "uri"
+        },
+        "sentimentAnalysisEnabled": {
+          "type": "boolean",
+          "description": "Flag indicating whether sentiment analysis is enabled for the user."
+        },
+        "dataRetentionPeriod": {
+          "type": "number",
+          "description": "Data retention period in days for the user's data."
         }
-      }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email"
+      ]
     },
     "ChatSession": {
-      "collection": "users/{userId}/chatSessions",
-      "description": "Stores a single chat session with all its messages.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatSession",
+      "type": "object",
+      "description": "Represents a chat session between a user and the AI assistant.",
       "properties": {
-        "id": "string (document ID)",
-        "userId": "string",
-        "createdAt": "timestamp",
-        "updatedAt": "timestamp",
-        "title": "string",
-        "messages": "array of ChatMessage"
-      }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ChatSession entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N ChatSession)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Timestamp indicating the start time of the chat session.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "Timestamp indicating the end time of the chat session.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "startTime"
+      ]
     },
     "ChatMessage": {
-      "description": "A single message within a chat session.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChatMessage",
+      "type": "object",
+      "description": "Represents a single message within a chat session.",
       "properties": {
-        "id": "string",
-        "text": "string",
-        "role": "string ('user' or 'assistant')",
-        "timestamp": "timestamp",
-        "sentiment": {
-          "score": "number",
-          "label": "string"
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ChatMessage entity."
+        },
+        "chatSessionId": {
+          "type": "string",
+          "description": "Reference to ChatSession. (Relationship: ChatSession 1:N ChatMessage)"
+        },
+        "sender": {
+          "type": "string",
+          "description": "Indicates who sent the message ('user' or 'assistant')."
+        },
+        "content": {
+          "type": "string",
+          "description": "The text content of the message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the message was sent.",
+          "format": "date-time"
         }
-      }
+      },
+      "required": [
+        "id",
+        "chatSessionId",
+        "sender",
+        "content",
+        "timestamp"
+      ]
     },
     "SentimentAnalysis": {
-      "collection": "sentimentAnalyses",
-      "description": "Stores generated summaries of user sentiment over time.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SentimentAnalysis",
+      "type": "object",
+      "description": "Represents the sentiment analysis results for a specific chat message.",
       "properties": {
-        "id": "string (document ID)",
-        "userId": "string",
-        "summary": "string",
-        "createdAt": "timestamp"
-      }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the SentimentAnalysis entity."
+        },
+        "chatMessageId": {
+          "type": "string",
+          "description": "Reference to ChatMessage. (Relationship: ChatMessage 1:1 SentimentAnalysis)"
+        },
+        "sentimentScore": {
+          "type": "number",
+          "description": "A numerical score representing the sentiment of the message (e.g., -1 to 1)."
+        },
+        "emotion": {
+          "type": "string",
+          "description": "The identified emotion in the message (e.g., 'joy', 'sadness', 'anger')."
+        }
+      },
+      "required": [
+        "id",
+        "chatMessageId",
+        "sentimentScore",
+        "emotion"
+      ]
     },
     "VoiceBlob": {
-      "collection": "voiceBlobs",
-      "description": "Temporary storage for voice recordings before processing (optional, could also be handled client-side).",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VoiceBlob",
+      "type": "object",
+      "description": "Represents a voice recording uploaded by the user.",
       "properties": {
-        "id": "string (document ID)",
-        "userId": "string",
-        "dataUri": "string",
-        "createdAt": "timestamp"
-      }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the VoiceBlob entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N VoiceBlob)"
+        },
+        "audioDataUri": {
+          "type": "string",
+          "description": "Base64 data URI representing the audio recording."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the voice recording was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "audioDataUri",
+        "timestamp"
+      ]
     },
     "Recommendation": {
-      "collection": "users/{userId}/recommendations",
-      "description": "Stores personalized recommendations for a user.",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Recommendation",
+      "type": "object",
+      "description": "Represents a personalized recommendation provided to the user.",
       "properties": {
-        "id": "string (document ID)",
-        "userId": "string",
-        "recommendation": "string",
-        "createdAt": "timestamp"
-      }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Recommendation entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Recommendation)"
+        },
+        "chatMessageId": {
+          "type": "string",
+          "description": "Reference to ChatMessage that triggered the recommendation. (Relationship: ChatMessage 1:N Recommendation)"
+        },
+        "recommendationText": {
+          "type": "string",
+          "description": "The text content of the recommendation."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the recommendation was generated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "recommendationText",
+        "timestamp"
+      ]
     }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile data.  Accessible only by the user with matching UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/chatSessions/{chatSessionId}",
+        "definition": {
+          "entityName": "ChatSession",
+          "schema": {
+            "$ref": "#/backend/entities/ChatSession"
+          },
+          "description": "Stores chat sessions for a user. Accessible only by the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth UID."
+            },
+            {
+              "name": "chatSessionId",
+              "description": "The unique identifier for the chat session."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}",
+        "definition": {
+          "entityName": "ChatMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ChatMessage"
+          },
+          "description": "Stores chat messages within a specific chat session.  Accessible only by the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth UID."
+            },
+            {
+              "name": "chatSessionId",
+              "description": "The unique identifier for the chat session."
+            },
+            {
+              "name": "chatMessageId",
+              "description": "The unique identifier for the chat message."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}/sentimentAnalysis/{sentimentAnalysisId}",
+        "definition": {
+          "entityName": "SentimentAnalysis",
+          "schema": {
+            "$ref": "#/backend/entities/SentimentAnalysis"
+          },
+          "description": "Stores sentiment analysis data for a specific chat message. Accessible only by the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth UID."
+            },
+            {
+              "name": "chatSessionId",
+              "description": "The unique identifier for the chat session."
+            },
+            {
+              "name": "chatMessageId",
+              "description": "The unique identifier for the chat message."
+            },
+            {
+              "name": "sentimentAnalysisId",
+              "description": "The unique identifier for the sentiment analysis data."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/voiceBlobs/{voiceBlobId}",
+        "definition": {
+          "entityName": "VoiceBlob",
+          "schema": {
+            "$ref": "#/backend/entities/VoiceBlob"
+          },
+          "description": "Stores voice blob data for a specific user. Accessible only by the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth UID."
+            },
+            {
+              "name": "voiceBlobId",
+              "description": "The unique identifier for the voice blob."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/recommendations/{recommendationId}",
+        "definition": {
+          "entityName": "Recommendation",
+          "schema": {
+            "$ref": "#/backend/entities/Recommendation"
+          },
+          "description": "Stores recommendations for a specific user. Accessible only by the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, matching the Firebase Auth UID."
+            },
+            {
+              "name": "recommendationId",
+              "description": "The unique identifier for the recommendation."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability, adhering to the principles of DBAC (Database-Based Access Control) and QAPs (Rules are not Filters). The structure prioritizes path-based ownership and membership maps for collaborative data access, eliminating the need for `get()` calls in security rules and enabling atomic operations.\n\n*   **Authorization Independence:** Achieved through denormalization. Specifically, any data requiring access control based on parent attributes (e.g., collaborative chat sessions) will have relevant user roles/permissions denormalized into the child documents (not applicable here, as user-owned data is used.)\n*   **QAPs Support:** The structure uses structural segregation to guarantee that all documents within a collection share identical security requirements, which facilitates secure list operations.\n\nHere's how each collection contributes to these goals:\n\n*   `/users/{userId}`: Stores user profiles, using path-based ownership for private user data. This ensures only the authenticated user can access their profile. User ID from `request.auth.uid` is explicitly included as a field in the document, improving readability and debuggability.\n*   `/users/{userId}/chatSessions/{chatSessionId}`: Stores chat sessions owned by a specific user.  This structure enforces a clear ownership model, making security rules straightforward.\n*   `/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}`: Stores individual chat messages within a chat session, maintaining the path-based ownership for data security.\n*   `/users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}/sentimentAnalysis/{sentimentAnalysisId}`: Stores sentiment analysis results for specific messages. The path reflects that sentiment analysis is only accessible in context of a message. Sentiment analysis data is not meant to be accessed independent of a chat message.\n*   `/users/{userId}/voiceBlobs/{voiceBlobId}`: Stores voice recordings uploaded by users, maintaining the path-based ownership for user privacy.\n*   `/users/{userId}/recommendations/{recommendationId}`: Stores personalized recommendations for each user, derived from sentiment analysis and chat context. These are owned by the user and accessible via path based rules."
   }
 }
