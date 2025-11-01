@@ -30,10 +30,9 @@ export default function ChatClient() {
 
     setIsLoading(true);
     
-    const userMessage: Omit<ChatMessageType, 'id' | 'timestamp'> = {
+    const userMessage: Omit<ChatMessageType, 'id' | 'timestamp' | 'userId'> = {
       role: 'user',
       text,
-      userId: userProfile.uid,
     };
 
     try {
@@ -46,13 +45,13 @@ export default function ChatClient() {
       };
 
       // Add user message to Firestore with sentiment in one go
-      await addMessage(userMessage, currentSentiment);
+      await addMessage(userMessage, userProfile.uid, currentSentiment);
 
       // Now update local state and fetch recommendations
       setLatestSentiment(currentSentiment);
       addMoodEntry(currentSentiment);
       
-      const tempMessages = [...messages, { ...userMessage, id: '', timestamp: new Date() }];
+      const tempMessages = [...messages, { ...userMessage, id: '', timestamp: new Date(), userId: userProfile.uid }];
 
       // Get recommendation using previous emotion for better context
       const recommendationResult = await getPersonalizedRecommendation({
@@ -67,12 +66,11 @@ export default function ChatClient() {
       const primaryResponse = recommendationResult.recommendations[0] || "I'm here to listen. How can I help?";
 
       // Add assistant's message to Firestore
-      const assistantMessage: Omit<ChatMessageType, 'id'|'timestamp'> = {
+      const assistantMessage: Omit<ChatMessageType, 'id'|'timestamp'|'userId'> = {
         role: 'assistant',
         text: primaryResponse,
-        userId: 'assistant',
       };
-      await addMessage(assistantMessage);
+      await addMessage(assistantMessage, 'assistant');
 
       // Update dashboard UI elements (suggestions and summary)
       setSuggestions(recommendationResult.recommendations);
@@ -89,12 +87,11 @@ export default function ChatClient() {
 
     } catch (error) {
       console.error('Error getting AI response:', error);
-      const errorMessage: Omit<ChatMessageType, 'id'|'timestamp'> = {
+      const errorMessage: Omit<ChatMessageType, 'id'|'timestamp'|'userId'> = {
         role: 'assistant',
         text: 'Sorry, I encountered an error. Please try again.',
-        userId: 'assistant',
       };
-      await addMessage(errorMessage);
+      await addMessage(errorMessage, 'assistant');
     } finally {
       setIsLoading(false);
     }
