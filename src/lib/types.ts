@@ -1,4 +1,3 @@
-
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -8,8 +7,6 @@ export type UserProfile = {
   displayName: string | null;
   photoURL: string | null;
   settings?: UserSettings;
-  chatSessions?: Record<string, ChatSession>;
-  chatMessages?: Record<string, Record<string, ChatMessage>>;
 };
 
 export type UserSettings = {
@@ -34,14 +31,26 @@ export type ChatMessage = {
 export type ChatSession = {
   id: string;
   userId: string;
+  createdAt: Date | Timestamp;
   updatedAt: Date | Timestamp;
   title: string;
+  lastMessage?: string;
 };
 
 export type MoodScore = {
   date: string;
   score: number;
+  emotion: string;
+  timestamp: Date | Timestamp;
 };
+
+export type Recommendation = {
+    id: string;
+    userId: string;
+    text: string;
+    type: 'meditation' | 'journal' | 'breathing' | 'activity' | 'affirmation';
+    timestamp: Date | Timestamp;
+}
 
 export interface AuthContextType {
   userProfile: UserProfile | null;

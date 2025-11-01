@@ -1,9 +1,6 @@
 'use client';
 
 import {
-  useState,
-  useEffect,
-  useContext,
   createContext,
   useCallback,
   ReactNode,
@@ -25,7 +22,7 @@ import {
   User as FirebaseUser,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, serverTimestamp } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -36,13 +33,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+// useAuth is now a simple wrapper around useFirebaseAuthProvider
+export { useFirebaseAuthProvider as useAuth };
+
 
 export const useFirebaseAuthProvider = (): AuthContextType => {
   const { user, isUserLoading } = useUser();
@@ -65,6 +58,7 @@ export const useFirebaseAuthProvider = (): AuthContextType => {
       if (!firestore) return;
       const userRef = doc(firestore, 'users', firebaseUser.uid);
 
+      // Create a clean user profile. Chat sessions will be handled by ChatProvider.
       const profile: UserProfile = {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
@@ -74,12 +68,8 @@ export const useFirebaseAuthProvider = (): AuthContextType => {
           enableSentimentAnalysis: true,
           dataRetentionPeriod: '90d',
         },
-        chatSessions: {},
-        chatMessages: {},
       };
       
-      // Use non-blocking write to create the user document only if it doesn't exist.
-      // We pass the entire profile object to ensure the document is created.
       setDocumentNonBlocking(userRef, profile, { merge: true });
 
       router.push('/dashboard');

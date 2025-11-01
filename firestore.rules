@@ -1,222 +1,33 @@
-
-/**
- * @file Firebase Security Rules for the Mindwell application.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model, where each user has exclusive access to their profile data, chat sessions, messages, sentiment analysis, voice blobs, recommendations, and badges.
- *
- * Data Structure:
- * All data is nested under /users/{userId}, ensuring a clear hierarchical structure. Chat sessions, messages, sentiment analysis, voice blobs, recommendations, and badges are all subcollections of a specific user's document.
- *
- * Key Security Decisions:
- * - Users can only access their own data.
- * - Listing of user documents is disallowed to protect user privacy.
- *
- * Denormalization for Authorization:
- * N/A: This ruleset relies solely on path-based ownership.
- *
- * Structural Segregation:
- * The application leverages structural segregation by storing all user-private data under the /users/{userId} path, which enables secure and efficient enforcement of user-specific access control.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Secure user profiles, allowing access only to the owner.
-     * @path /users/{userId}
-     * @allow (create) User with matching UID can create their profile.
-     * @allow (get, update, delete) User with matching UID can access and modify their profile.
-     * @deny (create, get, update, delete) Any other user cannot access or modify another user's profile.
-     * @principle Enforces document ownership for writes.
-     */
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.uid == request.auth.uid;
-      allow update: if isExistingOwner(userId) && request.resource.data.uid == resource.data.uid;
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
 
-    /**
-     * @description Secure chat sessions, allowing access only to the owner.
-     * @path /users/{userId}/chatSessions/{chatSessionId}
-     * @allow (create, get, update, delete) User with matching UID can access and modify their chat sessions.
-     * @deny (create, get, update, delete) Any other user cannot access or modify another user's chat sessions.
-     * @principle Enforces document ownership for writes.
-     */
-    match /users/{userId}/chatSessions/{chatSessionId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+    match /users/{userId}/chatSessions/{sessionId} {
+      allow read, write: if isOwner(userId);
     }
 
-    /**
-     * @description Secure chat messages, allowing access only to the owner.
-     * @path /users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}
-     * @allow (create, get, update, delete) User with matching UID can access and modify their chat messages.
-     * @deny (create, get, update, delete) Any other user cannot access or modify another user's chat messages.
-     * @principle Enforces document ownership for writes.
-     */
-    match /users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      // Read access is handled by the collection group query rule below
-      allow get: if isOwner(userId);
-      // List is handled by collection group query
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(userId);
+    match /users/{userId}/chatSessions/{sessionId}/messages/{messageId} {
+      allow read, write: if isOwner(userId);
     }
 
-    /**
-     * @description Secure sentiment analysis data, allowing access only to the owner.
-     * @path /users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}/sentimentAnalysis/{sentimentAnalysisId}
-     * @allow (create, get, update, delete) User with matching UID can access and modify their sentiment analysis data.
-     * @deny (create, get, update, delete) Any other user cannot access or modify another user's sentiment analysis data.
-     * @principle Enforces document ownership for writes.
-     */
-    match /users/{userId}/chatSessions/{chatSessionId}/chatMessages/{chatMessageId}/sentimentAnalysis/{sentimentAnalysisId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+    match /users/{userId}/moodTimeline/{dayId} {
+      allow read, write: if isOwner(userId);
     }
 
-    /**
-     * @description Secure voice blobs, allowing access only to the owner.
-     * @path /users/{userId}/voiceBlobs/{voiceBlobId}
-     * @allow (create, get, update, delete) User with matching UID can access and modify their voice blobs.
-     * @deny (create, get, update, delete) Any other user cannot access or modify another user's voice blobs.
-     * @principle Enforces document ownership for writes.
-     */
-    match /users/{userId}/voiceBlobs/{voiceBlobId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description Secure recommendations, allowing access only to the owner.
-     * @path /users/{userId}/recommendations/{recommendationId}
-     * @allow (create, get, update, delete) User with matching UID can access and modify their recommendations.
-     * @deny (create, get, update, delete) Any other user cannot access or modify another user's recommendations.
-     * @principle Enforces document ownership for writes.
-     */
-    match /users/{userId}/recommendations/{recommendationId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
-    }
-    
-    /**
-     * @description Secure badges, allowing access only to the owner.
-     * @path /users/{userId}/badges/{badgeId}
-     * @allow (read, list) User with matching UID can view their badges.
-     * @allow (create) User can create a badge for themselves.
-     * @deny (update, delete) Badges are immutable once created.
-     * @principle Enforces document ownership for reads and creates.
-     */
-    match /users/{userId}/badges/{badgeId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return isSignedIn() && request.auth.uid == userId;
-      }
-
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if false;
-    }
-
-    /**
-     * @description Allow users to list their own chat messages across all sessions for the mood chart.
-     * @path /chatMessages/{chatMessageId}
-     * @allow (list) User can list their own messages if the message's `userId` field matches their auth UID.
-     * @principle Enforces collection group query ownership.
-     */
-     match /{path=**}/chatMessages/{chatMessageId} {
-       allow list: if request.auth != null && request.auth.uid == resource.data.userId;
+    match /users/{userId}/recommendations/{recId} {
+      allow read, write: if isOwner(userId);
     }
   }
 }

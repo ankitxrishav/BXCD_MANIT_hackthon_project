@@ -15,6 +15,9 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useMemo } from 'react';
+import type { MoodScore } from '@/lib/types';
+import { Timestamp } from 'firebase/firestore';
+
 
 const chartConfig = {
   score: {
@@ -23,6 +26,17 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const toDate = (timestamp: any): Date => {
+  if (timestamp instanceof Timestamp) {
+      return timestamp.toDate();
+  }
+  // Handle cases where it might already be a Date object or ISO string
+  if (timestamp.seconds) { // A plain object from Firestore offline cache
+    return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+  }
+  return new Date(timestamp);
+}
+
 export default function MoodHistory() {
   const { moodScores } = useChat();
 
@@ -30,15 +44,21 @@ export default function MoodHistory() {
     if (!moodScores || moodScores.length === 0) {
       return [];
     }
+    
+    // Sort scores by date first
+    const sortedScores = [...moodScores].sort((a, b) => 
+        toDate(a.timestamp).getTime() - toDate(b.timestamp).getTime()
+    );
+
     // Aggregate scores by date (e.g., average score per day)
-    const dailyScores = moodScores.reduce(
-      (acc, score) => {
-        const date = new Date(score.date).toLocaleDateString();
-        if (!acc[date]) {
-          acc[date] = { scores: [], count: 0 };
+    const dailyScores = sortedScores.reduce(
+      (acc, scoreItem) => {
+        const dateStr = toDate(scoreItem.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (!acc[dateStr]) {
+          acc[dateStr] = { scores: [], count: 0 };
         }
-        acc[date].scores.push(score.score);
-        acc[date].count++;
+        acc[dateStr].scores.push(scoreItem.score);
+        acc[dateStr].count++;
         return acc;
       },
       {} as Record<string, { scores: number[]; count: number }>
@@ -49,12 +69,11 @@ export default function MoodHistory() {
         date,
         score: data.scores.reduce((a, b) => a + b, 0) / data.count,
       }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(-30); // show last 30 entries
   }, [moodScores]);
 
   return (
-    <Card className="h-full transform transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl">
+    <Card className="h-full glass-card transform-gpu transition-transform duration-300 hover:-translate-y-1">
       <CardHeader>
         <CardTitle>Mood Timeline</CardTitle>
         <CardDescription>
@@ -71,13 +90,13 @@ export default function MoodHistory() {
                   <stop offset="95%" stopColor="var(--color-score)" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid vertical={false} />
+              <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/50" />
               <XAxis
                 dataKey="date"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric'})}
+                
               />
               <YAxis
                 domain={[-1, 1]}
