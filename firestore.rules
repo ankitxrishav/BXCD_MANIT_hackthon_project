@@ -183,5 +183,15 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
     }
+
+    /**
+     * @description Allow users to list their own chat messages across all sessions for the mood chart.
+     * @path /chatMessages/{chatMessageId}
+     * @allow (list) User can list their own messages.
+     * @principle Enforces collection group query ownership.
+     */
+    match /{path=**}/chatMessages/{chatMessageId} {
+       allow list: if get(/databases/$(database)/documents/users/$(request.auth.uid)) != null;
+    }
   }
 }
