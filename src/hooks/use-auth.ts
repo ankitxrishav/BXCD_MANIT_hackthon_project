@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useContext, createContext, useCallback } from 'react';
@@ -68,7 +67,11 @@ export const useAuthProvider = (): AuthContextType => {
     try {
       await signInWithPopup(auth, provider);
       router.push('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
+      // Don't log an error if the user cancels the popup
+      if (error.code === 'auth/cancelled-popup-request') {
+        return;
+      }
       console.error('Error signing in with Google', error);
     }
   };
