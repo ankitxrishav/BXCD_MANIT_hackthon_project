@@ -43,7 +43,7 @@ export default function RecentActivity() {
         </CardHeader>
         <CardContent>
             <div className="space-y-4">
-            {isLoading && !sessions.length ? (
+            {isLoading && (!sessions || sessions.length === 0) ? (
                 <div className="space-y-4">
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
