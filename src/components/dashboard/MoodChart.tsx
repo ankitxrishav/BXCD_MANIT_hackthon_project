@@ -43,7 +43,7 @@ export default function MoodChart() {
     // This is a collection group query to get all chatMessages for the user across all chat sessions.
     return query(
       collectionGroup(firestore, 'chatMessages'),
-      where('userId', '==', user.uid), // This now safely uses the user.uid
+      where('userId', '==', user.uid),
       where('sentiment', '!=', null),
       where('timestamp', '>=', Timestamp.fromDate(sevenDaysAgo)),
       orderBy('timestamp', 'desc')
