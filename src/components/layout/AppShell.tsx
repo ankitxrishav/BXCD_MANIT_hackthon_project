@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -16,12 +17,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Logo from './Logo';
 import { cn } from '@/lib/utils';
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut, User as UserIcon } from 'lucide-react';
 import ChatBubble from '../chat/ChatBubble';
 
 const navLinks = [
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/settings', label: 'Settings' },
+  { href: '/settings', label: 'Profile' },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -33,10 +34,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-4 z-50 mx-4">
         <div className="container flex h-16 items-center rounded-2xl border bg-background/80 backdrop-blur-sm shadow-lg">
-          <div className="mr-auto">
+          <div className="mr-auto ml-4">
             <Logo />
           </div>
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium mr-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -50,7 +51,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
-          <div className="flex items-center ml-6">
+          <div className="flex items-center ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -72,8 +73,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
