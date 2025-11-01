@@ -52,7 +52,7 @@ export default function DashboardPage() {
             <RecentActivity />
         </AnimatedItem>
       </div>
-       <ChatBubble initialMessage="Welcome back! Ready to explore your dashboard insights?" />
+       <ChatBubble />
     </AnimatedWrapper>
   );
 }
