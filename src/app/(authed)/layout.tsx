@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
@@ -8,16 +7,16 @@ import AppShell from '@/components/layout/AppShell';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AuthedLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { userProfile, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !userProfile) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [userProfile, loading, router]);
 
-  if (loading || !user) {
+  if (loading || !userProfile) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <div className="w-full h-full p-4 space-y-4">

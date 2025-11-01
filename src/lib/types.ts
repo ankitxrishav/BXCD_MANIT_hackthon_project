@@ -41,17 +41,7 @@ export type MoodScore = {
   score: number;
 };
 
-// This is a mocked Firebase User object.
-export type MockUser = {
-    uid: string;
-    email: string | null;
-    displayName: string | null;
-    photoURL: string | null;
-}
-
-
 export type AuthContextType = {
-  user: MockUser | null;
   userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;

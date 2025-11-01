@@ -9,6 +9,7 @@ import { getPersonalizedRecommendation } from '@/ai/flows/personalized-recommend
 import { analyzeSentiment } from '@/ai/flows/sentiment-analysis';
 import { useChat } from '@/context/ChatProvider';
 import { summarizeSentimentAnalysis } from '@/ai/flows/summarize-sentiment-analysis';
+import SuggestedTopics from './SuggestedTopics';
 
 export default function ChatClient() {
   const { messages, addMessage, startNewSession, setMoodSummary, setSuggestions, setLatestSentiment } = useChat();
@@ -78,8 +79,7 @@ export default function ChatClient() {
         setMoodSummary(summaryResult.summary);
       }
 
-      setSuggestions(prev => [...prev, recommendationResult.recommendation].slice(-3)); // Keep last 3 suggestions
-
+      setSuggestions(prev => [recommendationResult.recommendation, ...prev].slice(0, 4));
 
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -96,11 +96,16 @@ export default function ChatClient() {
   };
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <ChatMessages messages={messages} isLoading={isLoading} />
-      <div className="border-t p-4 bg-background">
-        <ChatInput onSend={handleSend} isLoading={isLoading} />
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="md:col-span-2 flex flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-sm h-[70vh]">
+            <ChatMessages messages={messages} isLoading={isLoading} />
+            <div className="border-t p-4 bg-background">
+                <ChatInput onSend={handleSend} isLoading={isLoading} />
+            </div>
+        </div>
+        <div className="md:col-span-1">
+            <SuggestedTopics />
+        </div>
     </div>
   );
 }

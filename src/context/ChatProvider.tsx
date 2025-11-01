@@ -30,21 +30,21 @@ export const useChat = () => {
 };
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { userProfile } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [moodSummary, setMoodSummary] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>(['Mindfulness', 'Sleep Improvement', 'Coping Strategies', 'Building Resilience']);
   const [latestSentiment, setLatestSentiment] = useState<Sentiment | null>(null);
 
   const startNewSession = useCallback((initialMessageText?: string) => {
-    if (!user) return;
+    if (!userProfile) return;
 
     const newSessionId = `session-${Date.now()}`;
     const newSession: ChatSession = {
       id: newSessionId,
-      userId: user.uid,
+      userId: userProfile.uid,
       title: `New Conversation`,
       updatedAt: new Date(),
     };
@@ -52,7 +52,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     setSessions(prev => [...prev, newSession]);
     setActiveSessionId(newSessionId);
     setMoodSummary(null);
-    setSuggestions([]);
     setLatestSentiment(null);
 
     let initialMessages: ChatMessage[] = [];
@@ -65,7 +64,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       });
     }
     setMessages(initialMessages);
-  }, [user]);
+  }, [userProfile]);
   
   const addMessage = useCallback((message: ChatMessage) => {
     setMessages(prev => [...prev, message]);

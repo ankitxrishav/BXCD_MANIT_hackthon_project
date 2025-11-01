@@ -5,10 +5,9 @@ import { useRef, useEffect } from 'react';
 import type { ChatMessage } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BrainCircuit } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
-import { formatDistanceToNow } from 'date-fns';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
@@ -30,37 +29,32 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
   }, [messages, isLoading]);
 
   return (
-    <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+    <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
       <div className="space-y-6">
         {messages.map((message) => (
           <div
             key={message.id}
             className={cn(
-              'flex items-end gap-2',
+              'flex items-end gap-3',
               message.role === 'user' ? 'justify-end' : 'justify-start'
             )}
           >
             {message.role === 'assistant' && (
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary text-primary-foreground">
-                  <BrainCircuit className="h-5 w-5" />
+                  <Bot className="h-5 w-5" />
                 </AvatarFallback>
               </Avatar>
             )}
             <div
               className={cn(
-                'max-w-xs md:max-w-md rounded-lg px-4 py-2 text-sm shadow-sm',
+                'max-w-xs md:max-w-md rounded-2xl px-4 py-3 text-sm shadow-sm',
                 message.role === 'user'
-                  ? 'bg-primary text-primary-foreground rounded-br-none'
-                  : 'bg-card border rounded-bl-none'
+                  ? 'bg-user-message text-user-message-foreground rounded-br-none'
+                  : 'bg-assistant-message text-assistant-message-foreground rounded-bl-none'
               )}
             >
               <p className="whitespace-pre-wrap">{message.text}</p>
-               {message.timestamp && (
-                <p className="text-xs text-right mt-1 text-foreground/50">
-                    {formatDistanceToNow(message.timestamp, { addSuffix: true })}
-                </p>
-               )}
             </div>
             {message.role === 'user' && (
               <Avatar className="h-8 w-8">
@@ -71,13 +65,13 @@ export default function ChatMessages({ messages, isLoading }: ChatMessagesProps)
           </div>
         ))}
         {isLoading && (
-          <div className="flex items-end gap-2 justify-start">
+          <div className="flex items-end gap-3 justify-start">
             <Avatar className="h-8 w-8">
               <AvatarFallback className="bg-primary text-primary-foreground">
-                <BrainCircuit className="h-5 w-5" />
+                <Bot className="h-5 w-5" />
               </AvatarFallback>
             </Avatar>
-            <div className="bg-muted rounded-lg px-4 py-3 flex items-center space-x-2">
+            <div className="bg-muted rounded-2xl px-4 py-3 flex items-center space-x-2">
                 <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.3s]"></span>
                 <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse [animation-delay:-0.15s]"></span>
                 <span className="h-2 w-2 bg-muted-foreground rounded-full animate-pulse"></span>

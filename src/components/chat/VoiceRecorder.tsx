@@ -76,8 +76,9 @@ export default function VoiceRecorder({ onTranscription }: { onTranscription: (t
   return (
     <Button 
         onClick={isRecording ? handleStopRecording : handleStartRecording} 
-        variant={isRecording ? 'destructive' : 'outline'}
+        variant="ghost"
         size="icon"
+        className={cn('text-muted-foreground', isRecording ? 'text-red-500' : '')}
         disabled={isProcessing}
     >
         {isRecording ? <StopCircle className="h-5 w-5 animate-pulse" /> : <Mic className="h-5 w-5" />}
