@@ -4,8 +4,7 @@
 import { useState, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { SendHorizonal, Mic } from 'lucide-react';
-import VoiceRecorder from './VoiceRecorder';
+import { SendHorizonal } from 'lucide-react';
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -30,11 +29,6 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
     }
   };
 
-  const handleTranscription = (transcribedText: string) => {
-    setText(prev => prev ? `${prev} ${transcribedText}` : transcribedText);
-    textareaRef.current?.focus();
-  };
-
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 relative">
@@ -44,13 +38,10 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message here..."
-          className="flex-1 resize-none pr-24 rounded-full bg-input border-none"
+          className="flex-1 resize-none pr-12 rounded-full bg-input border-none"
           rows={1}
           disabled={isLoading}
         />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            <VoiceRecorder onTranscription={handleTranscription} />
-        </div>
       </div>
       <Button 
         onClick={handleSendClick} 
