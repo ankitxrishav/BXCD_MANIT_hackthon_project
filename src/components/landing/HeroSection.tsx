@@ -50,15 +50,15 @@ export default function HeroSection() {
             </div>
 
             {/* Hologram Chat UI */}
-            <AnimatedWrapper type="parallax-hero" className="mt-20">
+            <AnimatedWrapper type="parallax-hero" className="mt-20 mx-auto">
                 <div className="relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
                     <Image 
-                        src="https://picsum.photos/seed/hero-chat/1200/800"
+                        src="https://picsum.photos/seed/hologram-chat/1200/800"
                         alt="Emodash application interface"
                         width={1200}
                         height={800}
-                        className="rounded-2xl mx-auto glass-card p-2 shadow-2xl opacity-70"
+                        className="rounded-2xl mx-auto shadow-2xl opacity-70"
                         priority
                         data-ai-hint="hologram chat"
                     />
