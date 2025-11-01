@@ -64,13 +64,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (!userProfile?.uid || !activeSessionId || !firestore) return null;
     return query(collection(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId, 'messages'), orderBy('timestamp', 'asc'));
   }, [userProfile?.uid, activeSessionId, firestore]);
-  const { data: messages = [], isLoading: messagesLoading } = useCollection<ChatMessage>(messagesQuery);
-  
+  const { data: messagesData, isLoading: messagesLoading } = useCollection<ChatMessage>(messagesQuery);
+  const messages = messagesData || [];
+
   const allMessagesQuery = useMemoFirebase(() => {
     if (!userProfile?.uid || !firestore || !activeSessionId) return null;
     return query(collection(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId, 'messages'), orderBy('timestamp', 'asc'));
   }, [userProfile?.uid, firestore, activeSessionId]);
-  const { data: allMessages = [] } = useCollection<ChatMessage>(allMessagesQuery);
+  const { data: allMessagesData } = useCollection<ChatMessage>(allMessagesQuery);
+  const allMessages = allMessagesData || [];
   
   const moodScores = useMemo(() => {
     if (!allMessages) return [];
