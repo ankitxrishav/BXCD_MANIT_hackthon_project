@@ -1,0 +1,20 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      // Users can create their own document, and can read/update/delete it
+      allow create, read, update, delete: if request.auth.uid == userId;
+      // Nobody can list all users
+      allow list: if false;
+
+      // Any subcollection under a user document
+      match /{subcollection}/{docId=**} {
+        // Only the owner of the user document can read/write to subcollections
+        allow read, write: if request.auth.uid == userId;
+      }
+    }
+  }
+}

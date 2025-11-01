@@ -1,0 +1,75 @@
+
+{
+  "entities": {
+    "User": {
+      "collection": "users",
+      "description": "Stores user profile information.",
+      "properties": {
+        "uid": "string (document ID)",
+        "email": "string",
+        "displayName": "string",
+        "photoURL": "string",
+        "createdAt": "timestamp",
+        "settings": {
+          "enableSentimentAnalysis": "boolean",
+          "dataRetentionPeriod": "string ('30d', '90d', '1y', 'forever')"
+        }
+      }
+    },
+    "ChatSession": {
+      "collection": "users/{userId}/chatSessions",
+      "description": "Stores a single chat session with all its messages.",
+      "properties": {
+        "id": "string (document ID)",
+        "userId": "string",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp",
+        "title": "string",
+        "messages": "array of ChatMessage"
+      }
+    },
+    "ChatMessage": {
+      "description": "A single message within a chat session.",
+      "properties": {
+        "id": "string",
+        "text": "string",
+        "role": "string ('user' or 'assistant')",
+        "timestamp": "timestamp",
+        "sentiment": {
+          "score": "number",
+          "label": "string"
+        }
+      }
+    },
+    "SentimentAnalysis": {
+      "collection": "sentimentAnalyses",
+      "description": "Stores generated summaries of user sentiment over time.",
+      "properties": {
+        "id": "string (document ID)",
+        "userId": "string",
+        "summary": "string",
+        "createdAt": "timestamp"
+      }
+    },
+    "VoiceBlob": {
+      "collection": "voiceBlobs",
+      "description": "Temporary storage for voice recordings before processing (optional, could also be handled client-side).",
+      "properties": {
+        "id": "string (document ID)",
+        "userId": "string",
+        "dataUri": "string",
+        "createdAt": "timestamp"
+      }
+    },
+    "Recommendation": {
+      "collection": "users/{userId}/recommendations",
+      "description": "Stores personalized recommendations for a user.",
+      "properties": {
+        "id": "string (document ID)",
+        "userId": "string",
+        "recommendation": "string",
+        "createdAt": "timestamp"
+      }
+    }
+  }
+}
