@@ -191,7 +191,7 @@ service cloud.firestore {
      * @principle Enforces collection group query ownership.
      */
     match /{path=**}/chatMessages/{chatMessageId} {
-       allow list: if get(/databases/$(database)/documents/users/$(request.auth.uid)) != null;
+       allow list: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.uid == request.auth.uid;
     }
   }
 }
