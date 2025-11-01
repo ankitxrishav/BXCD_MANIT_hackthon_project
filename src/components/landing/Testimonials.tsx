@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import AnimatedWrapper, { AnimatedItem } from './AnimatedWrapper';
 
 const testimonials = [
     {
@@ -28,33 +29,36 @@ export default function Testimonials() {
   return (
     <section id="testimonials" className="bg-transparent">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-            <div className="text-center max-w-3xl mx-auto">
+            <AnimatedWrapper type="fade-in" className="text-center max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-headline font-bold">
                     Loved by Users Worldwide
                 </h2>
                 <p className="mt-4 text-lg text-muted-foreground">
                     Don't just take our word for it. Here's what our users have to say about their journey with Emodash.
                 </p>
-            </div>
-            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </AnimatedWrapper>
+
+            <AnimatedWrapper type="stagger-children" className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {testimonials.map((testimonial, index) => (
-                    <Card key={index} className="glass-card">
-                        <CardContent className="p-6">
-                            <p className="text-foreground/80">"{testimonial.quote}"</p>
-                            <div className="flex items-center gap-4 mt-6">
-                                <Avatar>
-                                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                                    <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-semibold">{testimonial.name}</p>
-                                    <p className="text-sm text-muted-foreground">{testimonial.title}</p>
+                    <AnimatedItem key={index}>
+                        <Card className="glass-card h-full">
+                            <CardContent className="p-6">
+                                <p className="text-foreground/80">"{testimonial.quote}"</p>
+                                <div className="flex items-center gap-4 mt-6">
+                                    <Avatar>
+                                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                                        <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-semibold">{testimonial.name}</p>
+                                        <p className="text-sm text-muted-foreground">{testimonial.title}</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    </AnimatedItem>
                 ))}
-            </div>
+            </AnimatedWrapper>
         </div>
     </section>
   );
