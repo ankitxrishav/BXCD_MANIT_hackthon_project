@@ -30,14 +30,6 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
     --user-message: 28 100% 63%; /* Orange */
     --user-message-foreground: 0 0% 100%;
     --assistant-message: 240 4.8% 95.9%;
@@ -68,14 +60,6 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
     --user-message: 28 100% 63%;
     --user-message-foreground: 0 0% 100%;
     --assistant-message: 240 3.7% 15.9%;
@@ -89,5 +73,62 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #000;
+    overflow-x: hidden;
+  }
+
+  .light body {
+    animation: background-pan 15s linear infinite;
+    background: linear-gradient(
+      90deg,
+      hsl(190, 80%, 95%),
+      hsl(220, 80%, 95%),
+      hsl(280, 80%, 95%),
+      hsl(190, 80%, 95%)
+    );
+    background-size: 200% 100%;
+  }
+  
+  .dark body {
+    animation: background-pan 15s linear infinite;
+    background: linear-gradient(
+      90deg,
+      hsl(220, 15%, 10%),
+      hsl(260, 15%, 10%),
+      hsl(220, 15%, 10%)
+    );
+    background-size: 200% 100%;
+  }
+  
+  @keyframes background-pan {
+    0% {
+      background-position: 0% center;
+    }
+    100% {
+      background-position: -200% center;
+    }
+  }
+
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-lg border border-white/10 shadow-lg;
+  }
+
+  .glow-sm::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: hsl(var(--primary));
+    filter: blur(40px);
+    opacity: 0.1;
+    z-index: -1;
+    transition: opacity 0.3s;
+  }
+  
+  .dark .glow-sm::before {
+    opacity: 0.2;
   }
 }
+

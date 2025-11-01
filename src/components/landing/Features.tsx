@@ -41,11 +41,11 @@ export default function Features() {
                 Emodash is packed with features designed to provide compassionate support and actionable insights for your mental health journey.
             </p>
         </div>
-        <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
-            <Card key={index} className="text-left bg-card shadow-sm border-border/60 transform transition-transform duration-300 hover:-translate-y-2">
+            <Card key={index} className="text-left glass-card transform transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
                 <CardHeader>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary glow-sm relative">
                     <feature.icon className="h-6 w-6" />
                 </div>
                 <CardTitle className="mt-4 font-bold text-lg">{feature.title}</CardTitle>

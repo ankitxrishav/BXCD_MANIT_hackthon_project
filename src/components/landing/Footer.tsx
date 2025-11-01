@@ -4,7 +4,7 @@ import Logo from '@/components/layout/Logo';
 export default function Footer() {
     const currentYear = new Date().getFullYear();
   return (
-    <footer className="bg-muted/40">
+    <footer className="border-t border-white/10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="space-y-4">
@@ -39,7 +39,7 @@ export default function Footer() {
                     </div>
                 </div>
             </div>
-            <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row items-center justify-between">
+            <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between">
                 <p className="text-sm text-muted-foreground">© {currentYear} Emodash. All rights reserved.</p>
                 <div className="flex items-center space-x-4 mt-4 sm:mt-0">
                     {/* Social links can go here */}

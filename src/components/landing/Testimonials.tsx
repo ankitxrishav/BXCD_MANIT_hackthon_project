@@ -26,7 +26,7 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section id="testimonials" className="bg-muted/40">
+    <section id="testimonials" className="bg-transparent">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
             <div className="text-center max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-headline font-bold">
@@ -36,9 +36,9 @@ export default function Testimonials() {
                     Don't just take our word for it. Here's what our users have to say about their journey with Emodash.
                 </p>
             </div>
-            <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {testimonials.map((testimonial, index) => (
-                    <Card key={index} className="bg-background">
+                    <Card key={index} className="glass-card">
                         <CardContent className="p-6">
                             <p className="text-foreground/80">"{testimonial.quote}"</p>
                             <div className="flex items-center gap-4 mt-6">
