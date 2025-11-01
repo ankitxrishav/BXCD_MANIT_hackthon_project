@@ -18,8 +18,10 @@ import {
   serverTimestamp,
   addDoc,
   setDoc,
+  query,
+  orderBy,
 } from 'firebase/firestore';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 
 interface ChatContextType {
   messages: ChatMessage[];
@@ -51,31 +53,41 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
-  const { data: messages = [] } = useCollection<ChatMessage>(
-    activeSessionId && userProfile
-      ? collection(
-          firestore,
-          `users/${userProfile.uid}/chatSessions/${activeSessionId}/chatMessages`
-        )
-      : null
-  );
+  const messagesQuery = useMemoFirebase(() => {
+    if (!activeSessionId || !userProfile || !firestore) return null;
+    return query(
+      collection(
+        firestore,
+        `users/${userProfile.uid}/chatSessions/${activeSessionId}/chatMessages`
+      ),
+      orderBy('timestamp', 'asc')
+    );
+  }, [activeSessionId, userProfile, firestore]);
 
-  const { data: sessions = [] } = useCollection<ChatSession>(
-    userProfile
-      ? collection(firestore, `users/${userProfile.uid}/chatSessions`)
-      : null
-  );
+  const { data: messages = [] } = useCollection<ChatMessage>(messagesQuery);
+
+  const sessionsQuery = useMemoFirebase(() => {
+    if (!userProfile || !firestore) return null;
+    return query(
+      collection(firestore, `users/${userProfile.uid}/chatSessions`),
+      orderBy('updatedAt', 'desc')
+    );
+  }, [userProfile, firestore]);
+
+  const { data: sessions = [] } = useCollection<ChatSession>(sessionsQuery);
 
   const [moodSummary, setMoodSummary] = useState<string | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>([
-    'Mindfulness',
-    'Sleep Improvement',
-    'Coping Strategies',
-    'Building Resilience',
-  ]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [latestSentiment, setLatestSentiment] = useState<Sentiment | null>(
     null
   );
+
+  useEffect(() => {
+    if (!activeSessionId && sessions.length > 0) {
+      setActiveSessionId(sessions[0].id);
+    }
+  }, [sessions, activeSessionId]);
+
 
   const startNewSession = useCallback(
     async (initialMessageText?: string) => {
@@ -132,15 +144,21 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         `users/${userProfile.uid}/chatSessions`,
         activeSessionId
       );
-      const isGenericTitle = sessions.find(s => s.id === activeSessionId)?.title === 'New Conversation';
-      const newTitle = isGenericTitle && message.role === 'user' ? message.text.substring(0, 30) + '...' : undefined;
+      
+      const currentSession = sessions.find(s => s.id === activeSessionId);
+      const isGenericTitle = currentSession?.title === 'New Conversation';
+      
+      const updatePayload: any = {
+        updatedAt: serverTimestamp(),
+      };
+
+      if (isGenericTitle && message.role === 'user' && message.text) {
+        updatePayload.title = message.text.substring(0, 30) + (message.text.length > 30 ? '...' : '');
+      }
       
       await setDoc(
         sessionRef,
-        {
-          updatedAt: serverTimestamp(),
-          ...(newTitle && { title: newTitle }),
-        },
+        updatePayload,
         { merge: true }
       );
     },
