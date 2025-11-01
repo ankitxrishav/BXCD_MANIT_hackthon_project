@@ -1,17 +1,10 @@
-import Image from 'next/image';
 import { BentoGrid, BentoGridItem } from './BentoGrid';
-import { Bot, ChartNoAxesColumnIncreasing, Droplets, Wind } from 'lucide-react';
+import { Bot, ChartNoAxesColumnIncreasing, Wind, BrainCircuit } from 'lucide-react';
+import AnimatedWrapper, { AnimatedItem } from './AnimatedWrapper';
 
-const Skeleton = ({ src, alt, hint }: { src: string, alt: string, hint: string }) => (
-    <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100 overflow-hidden">
-        <Image 
-            src={src}
-            alt={alt}
-            width={800}
-            height={600}
-            className="object-cover w-full h-full"
-            data-ai-hint={hint}
-        />
+const Illustration = ({ icon: Icon }: { icon: React.ElementType }) => (
+    <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200/50 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100/50 items-center justify-center">
+        <Icon className="w-20 h-20 text-muted-foreground/50" />
     </div>
 );
 
@@ -19,30 +12,30 @@ const items = [
     {
       title: 'AI Chat Interface',
       description: 'A clean, calming space for your conversations with Emodash.',
-      header: <Skeleton src="https://picsum.photos/seed/ai-chat/800/600" alt="Chat UI" hint="ai chat" />,
+      header: <Illustration icon={Bot} />,
       className: 'md:col-span-2',
       icon: <Bot className="h-4 w-4 text-neutral-500" />,
     },
     {
       title: 'Emotion Graph',
       description: 'Track your mood fluctuations over time to spot trends.',
-      header: <Skeleton src="https://picsum.photos/seed/dashboard-graph/800/600" alt="Emotion Graph" hint="dashboard graph" />,
+      header: <Illustration icon={ChartNoAxesColumnIncreasing} />,
       className: '',
       icon: <ChartNoAxesColumnIncreasing className="h-4 w-4 text-neutral-500" />,
     },
     {
       title: 'Guided Breathing',
       description: 'Follow the animated guide to find your center.',
-      header: <Skeleton src="https://picsum.photos/seed/mindfulness-app/800/600" alt="Breathing Animation" hint="mindfulness app" />,
+      header: <Illustration icon={Wind} />,
       className: '',
       icon: <Wind className="h-4 w-4 text-neutral-500" />,
     },
     {
       title: 'Personal Insights',
       description: 'Understand your emotional landscape with AI-driven summaries.',
-      header: <Skeleton src="https://picsum.photos/seed/analytics-dashboard/800/600" alt="Personal Insights" hint="analytics dashboard" />,
+      header: <Illustration icon={BrainCircuit} />,
       className: 'md:col-span-2',
-      icon: <Droplets className="h-4 w-4 text-neutral-500" />,
+      icon: <BrainCircuit className="h-4 w-4 text-neutral-500" />,
     },
   ];
 
@@ -57,18 +50,21 @@ export default function AppPreviewSection() {
                     An intuitive interface to visualize your progress and access supportive tools.
                 </p>
             </div>
-            <BentoGrid className="mt-16">
-                {items.map((item, i) => (
-                    <BentoGridItem
-                        key={i}
-                        title={item.title}
-                        description={item.description}
-                        header={item.header}
-                        className={item.className}
-                        icon={item.icon}
-                    />
-                ))}
-            </BentoGrid>
+            <AnimatedWrapper type="stagger-children" className="mt-16">
+                <BentoGrid>
+                    {items.map((item, i) => (
+                        <AnimatedItem key={i}>
+                            <BentoGridItem
+                                title={item.title}
+                                description={item.description}
+                                header={item.header}
+                                className={item.className}
+                                icon={item.icon}
+                            />
+                        </AnimatedItem>
+                    ))}
+                </BentoGrid>
+            </AnimatedWrapper>
         </section>
     );
 }
