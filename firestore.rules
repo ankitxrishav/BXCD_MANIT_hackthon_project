@@ -19,7 +19,13 @@ service cloud.firestore {
     }
 
     match /users/{userId}/chatSessions/{sessionId}/messages/{messageId} {
-      allow list, read, write: if isOwner(userId);
+      allow read, write: if isOwner(userId);
+    }
+    
+    // This rule allows the collectionGroup query for 'messages' needed by the mood timeline.
+    // It ensures a user can only 'list' messages where their UID matches the message's userId.
+    match /{path=**}/messages/{messageId} {
+      allow list: if signedIn() && request.auth.uid == resource.data.userId;
     }
 
     match /users/{userId}/moodTimeline/{dayId} {
