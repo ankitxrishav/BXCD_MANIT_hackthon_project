@@ -30,6 +30,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // This is required to prevent Next.js from bundling the AI flows.
+    serverComponentsExternalPackages: ['@genkit-ai/google-genai', 'genkit'],
+  },
 };
 
 export default nextConfig;
