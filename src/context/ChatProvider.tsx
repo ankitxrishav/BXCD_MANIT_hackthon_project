@@ -16,7 +16,6 @@ import {
   useMemoFirebase,
   setDocumentNonBlocking,
   updateDocumentNonBlocking,
-  addDocumentNonBlocking,
 } from '@/firebase';
 import { collection, doc, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
@@ -30,8 +29,7 @@ interface ChatContextType {
   activeSessionId: string | null;
   setActiveSessionId: (sessionId: string | null) => void;
   startNewSession: (initialMessageText?: string) => Promise<string | undefined>;
-  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>, userId: string) => Promise<string>;
-  updateMessage: (sessionId: string, messageId: string, updates: Partial<ChatMessage>) => void;
+  addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>, userId: string, sentiment?: Sentiment) => Promise<string>;
   addMoodEntry: (sentiment: Sentiment) => void;
   moodSummary: string | null;
   setMoodSummary: React.Dispatch<React.SetStateAction<string | null>>;
@@ -136,7 +134,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     return newSessionId;
   }, [userProfile, firestore]);
 
-  const addMessage = useCallback(async (message: Omit<ChatMessage, 'id' | 'timestamp'>, userId: string): Promise<string> => {
+  const addMessage = useCallback(async (message: Omit<ChatMessage, 'id' | 'timestamp'>, userId: string, sentiment?: Sentiment): Promise<string> => {
     if (!activeSessionId || !userProfile || !firestore) throw new Error("Cannot add message, context not ready");
     
     const messageId = uuidv4();
@@ -147,6 +145,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       ...message,
       userId,
       timestamp: serverTimestamp() as any,
+      ...(sentiment && { sentiment }),
     };
     
     const sessionRef = doc(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId);
@@ -169,18 +168,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     return messageId;
   }, [activeSessionId, userProfile, firestore, sessions]);
 
-  const updateMessage = useCallback((sessionId: string, messageId: string, updates: Partial<ChatMessage>) => {
-    if (!userProfile || !firestore) return;
-    const messageRef = doc(firestore, 'users', userProfile.uid, 'chatSessions', sessionId, 'messages', messageId);
-    updateDocumentNonBlocking(messageRef, updates);
-  }, [userProfile, firestore]);
-
   const addMoodEntry = useCallback((sentiment: Sentiment) => {
     if (!userProfile || !firestore) return;
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    // To ensure we get a unique ID for each entry but can still query by day, we can create a new doc in a sub-collection.
-    // However, for simplicity and given the `dayId` structure, we'll overwrite/update the entry for the day.
-    // A more robust system might average scores for the day.
     const moodRef = doc(firestore, 'users', userProfile.uid, 'moodTimeline', today);
     const newMoodEntry: MoodScore = {
         date: today,
@@ -202,7 +192,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     setActiveSessionId,
     startNewSession,
     addMessage,
-    updateMessage,
     addMoodEntry,
     moodSummary,
     setMoodSummary,
