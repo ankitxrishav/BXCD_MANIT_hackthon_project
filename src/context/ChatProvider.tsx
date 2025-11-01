@@ -17,7 +17,7 @@ import {
   useCollection,
   useMemoFirebase,
 } from '@/firebase';
-import { collection, doc, query, orderBy, serverTimestamp, writeBatch, collectionGroup, where } from 'firebase/firestore';
+import { collection, doc, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 interface ChatContextType {
@@ -67,26 +67,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const { data: messagesData, isLoading: messagesLoading } = useCollection<ChatMessage>(messagesQuery);
   const messages = messagesData || [];
 
-  const allMessagesQuery = useMemoFirebase(() => {
-    if (!userProfile?.uid || !firestore) return null;
-    return query(
-      collectionGroup(firestore, 'messages'),
-      where('userId', '==', userProfile.uid),
-      orderBy('timestamp', 'asc')
-    );
-  }, [userProfile?.uid, firestore]);
-  
-  const { data: allMessagesData } = useCollection<ChatMessage>(allMessagesQuery);
-
   const moodScores = useMemo(() => {
-    if (!allMessagesData) return [];
-    return allMessagesData
+    if (!messages) return [];
+    return messages
       .filter(m => m.userId === userProfile?.uid && m.sentiment)
       .map(m => ({
         ...m.sentiment,
         timestamp: m.timestamp
       })) as MoodScore[];
-  }, [allMessagesData, userProfile?.uid]);
+  }, [messages, userProfile?.uid]);
 
 
   // --- State ---
