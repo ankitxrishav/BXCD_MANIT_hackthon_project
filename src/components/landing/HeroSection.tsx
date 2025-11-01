@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ShieldCheck } from 'lucide-react';
 import AnimatedGridPattern from './AnimatedGridPattern';
 import Orb from './Orb';
+import AnimatedWrapper from './AnimatedWrapper';
 
 export default function HeroSection() {
   return (
@@ -49,17 +50,19 @@ export default function HeroSection() {
             </div>
 
             {/* Hologram Chat UI */}
-            <div className="mt-20 relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
-                <Image 
-                    src="https://picsum.photos/seed/hero-chat/1200/800"
-                    alt="Holographic chat UI"
-                    width={1200}
-                    height={800}
-                    className="rounded-2xl mx-auto glass-card p-2 shadow-2xl opacity-70"
-                    data-ai-hint="hologram chat"
-                />
-            </div>
+            <AnimatedWrapper type="parallax-hero" className="mt-20">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
+                    <Image 
+                        src="/img/main.png"
+                        alt="Emodash application interface"
+                        width={1200}
+                        height={800}
+                        className="rounded-2xl mx-auto glass-card p-2 shadow-2xl opacity-70"
+                        priority
+                    />
+                </div>
+            </AnimatedWrapper>
         </div>
     </section>
   );
