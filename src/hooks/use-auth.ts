@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useContext, createContext, useCallback } from 'react';
@@ -7,6 +8,7 @@ import { useFirebase } from '@/firebase/provider';
 import type { AuthContextType, UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { Auth, User } from 'firebase/auth';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -41,7 +43,7 @@ export const useAuthProvider = (): AuthContextType => {
           dataRetentionPeriod: '90d',
         }
       };
-      await setDoc(userRef, newUserProfile);
+      setDocumentNonBlocking(userRef, newUserProfile, {});
       setUserProfile(newUserProfile);
     }
   }, []);
