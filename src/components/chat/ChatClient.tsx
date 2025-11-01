@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -21,6 +22,7 @@ export default function ChatClient() {
     updateMessage, 
     setMoodSummary, 
     setSuggestions, 
+    latestSentiment, // Added here
     setLatestSentiment, 
     addMoodEntry
   } = useChat();
