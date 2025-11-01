@@ -14,7 +14,7 @@ import { useChat } from '@/context/ChatProvider';
 import { Skeleton } from '../ui/skeleton';
 
 export default function RecentActivity() {
-  const { sessions, setActiveSessionId, activeSessionId } = useChat();
+  const { sessions, setActiveSessionId, activeSessionId, isLoading } = useChat();
 
   const toDate = (timestamp: any): Date => {
       if (timestamp instanceof Timestamp) {
@@ -25,8 +25,6 @@ export default function RecentActivity() {
       }
       return new Date(timestamp);
   }
-
-  const isLoading = !sessions;
 
   return (
     <Card className="transform-gpu transition-transform duration-300 hover:-translate-y-1 glass-card">

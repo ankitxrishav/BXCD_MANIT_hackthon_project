@@ -15,19 +15,19 @@ service cloud.firestore {
     }
 
     match /users/{userId}/chatSessions/{sessionId} {
-      allow read, write: if isOwner(userId);
+      allow list, read, write: if isOwner(userId);
     }
 
     match /users/{userId}/chatSessions/{sessionId}/messages/{messageId} {
-      allow read, write: if isOwner(userId);
+      allow list, read, write: if isOwner(userId);
     }
 
     match /users/{userId}/moodTimeline/{dayId} {
-      allow read, write: if isOwner(userId);
+      allow list, read, write: if isOwner(userId);
     }
 
     match /users/{userId}/recommendations/{recId} {
-      allow read, write: if isOwner(userId);
+      allow list, read, write: if isOwner(userId);
     }
   }
 }

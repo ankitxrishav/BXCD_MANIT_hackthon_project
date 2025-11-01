@@ -7,7 +7,6 @@ import React, {
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
 } from 'react';
 import type { ChatMessage, ChatSession, Sentiment, UserProfile, MoodScore } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth.tsx';
@@ -15,9 +14,8 @@ import {
   useFirestore,
   useCollection,
   useMemoFirebase,
-  addDocumentNonBlocking,
+  setDocumentNonBlocking,
   updateDocumentNonBlocking,
-  setDocumentNonBlocking
 } from '@/firebase';
 import { collection, doc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,6 +25,7 @@ interface ChatContextType {
   sessions: ChatSession[];
   messages: ChatMessage[];
   moodScores: MoodScore[];
+  isLoading: boolean;
   activeSessionId: string | null;
   setActiveSessionId: (sessionId: string | null) => void;
   startNewSession: (initialMessageText?: string) => Promise<void>;
@@ -61,35 +60,36 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (!userProfile?.uid || !firestore) return null;
     return query(collection(firestore, 'users', userProfile.uid, 'chatSessions'), orderBy('updatedAt', 'desc'));
   }, [userProfile?.uid, firestore]);
-  const { data: sessions = [] } = useCollection<ChatSession>(sessionsQuery);
+  const { data: sessions = [], isLoading: sessionsLoading } = useCollection<ChatSession>(sessionsQuery);
 
   const messagesQuery = useMemoFirebase(() => {
     if (!userProfile?.uid || !activeSessionId || !firestore) return null;
     return query(collection(firestore, 'users', userProfile.uid, 'chatSessions', activeSessionId, 'messages'), orderBy('timestamp', 'asc'));
   }, [userProfile?.uid, activeSessionId, firestore]);
-  const { data: messages = [] } = useCollection<ChatMessage>(messagesQuery);
+  const { data: messages = [], isLoading: messagesLoading } = useCollection<ChatMessage>(messagesQuery);
   
   const moodTimelineQuery = useMemoFirebase(() => {
     if (!userProfile?.uid || !firestore) return null;
     return query(collection(firestore, 'users', userProfile.uid, 'moodTimeline'), orderBy('timestamp', 'desc'));
   }, [userProfile?.uid, firestore]);
-  const { data: moodScores = [] } = useCollection<MoodScore>(moodTimelineQuery);
+  const { data: moodScores = [], isLoading: moodScoresLoading } = useCollection<MoodScore>(moodTimelineQuery);
 
   // --- State ---
   const [moodSummary, setMoodSummary] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [latestSentiment, setLatestSentiment] = useState<Sentiment | null>(null);
+  const isLoading = authLoading || sessionsLoading || messagesLoading || moodScoresLoading;
 
   // --- Effects ---
   useEffect(() => {
-    if (!authLoading && userProfile) {
+    if (!isLoading && userProfile) {
       if (!activeSessionId && sessions && sessions.length > 0) {
         setActiveSessionId(sessions[0].id);
-      } else if (!activeSessionId && sessions && sessions.length === 0) {
+      } else if (sessions && sessions.length === 0) {
         startNewSession('Hello! How are you feeling today?');
       }
     }
-  }, [authLoading, userProfile, sessions, activeSessionId]);
+  }, [isLoading, userProfile, sessions, activeSessionId]);
 
   // --- Functions ---
   const startNewSession = useCallback(async (initialMessageText?: string) => {
@@ -180,9 +180,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   const value = {
     userProfile,
-    sessions: sessions || [],
-    messages: messages || [],
-    moodScores: moodScores || [],
+    sessions,
+    messages,
+    moodScores,
+    isLoading,
     activeSessionId,
     setActiveSessionId,
     startNewSession,
