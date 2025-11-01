@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { BrainCircuit, HeartHandshake, Mic } from 'lucide-react';
+import { BrainCircuit, Zap, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/layout/Logo';
@@ -18,72 +18,74 @@ export default function Home() {
       </header>
 
       <main className="flex-grow">
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-4xl md:text-6xl font-headline font-bold tracking-tight text-primary">
-            Find your balance with Mindwell
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold tracking-tight text-foreground">
+            Your AI Mental Wellness Companion
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-foreground/80">
-            Your personal AI companion for tracking mood, understanding your emotions, and fostering mental well-being.
+          <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground">
+            Real-time emotion detection, personalized wellness recommendations,
+            and compassionate AI support for your mental health journey.
           </p>
-          <div className="mt-8">
+          <div className="mt-10">
             <Button asChild size="lg">
-              <Link href="/login">Start Your Journey</Link>
+              <Link href="/login">Start Conversation &rarr;</Link>
             </Button>
           </div>
         </section>
 
-        <section className="bg-secondary/50 py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-headline font-bold text-center text-primary">
-              How Mindwell Helps You
-            </h2>
-            <div className="mt-12 grid gap-8 md:grid-cols-3">
-              <Card className="text-center">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="grid gap-8 md:grid-cols-3">
+              <Card className="text-left bg-card shadow-lg border-none">
                 <CardHeader>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/50 text-accent-foreground">
-                    <HeartHandshake className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="mt-4 font-headline">AI-Powered Chat</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-foreground/80">
-                    Engage in meaningful conversations with your AI companion. Talk about your day, your feelings, or anything on your mind.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="text-center">
-                <CardHeader>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/50 text-accent-foreground">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
                     <BrainCircuit className="h-6 w-6" />
                   </div>
-                  <CardTitle className="mt-4 font-headline">Sentiment Analysis</CardTitle>
+                  <CardTitle className="mt-4 font-bold text-lg">Emotion Detection</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-foreground/80">
-                    Gain insights into your emotional patterns. Mindwell analyzes your conversations to help you understand your mood trends over time.
+                  <p className="text-muted-foreground">
+                    Real-time AI analysis detects your emotions
+                    during conversations and provides instant
+                    insights.
                   </p>
                 </CardContent>
               </Card>
-              <Card className="text-center">
+              <Card className="text-left bg-card shadow-lg border-none">
                 <CardHeader>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/50 text-accent-foreground">
-                    <Mic className="h-6 w-6" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
+                    <Zap className="h-6 w-6" />
                   </div>
-                  <CardTitle className="mt-4 font-headline">Personalized Insights</CardTitle>
+                  <CardTitle className="mt-4 font-bold text-lg">Smart Recommendations</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-foreground/80">
-                    Receive gentle, personalized recommendations and prompts based on your conversations to support your mental wellness journey.
+                  <p className="text-muted-foreground">
+                    Personalized wellness suggestions
+                    including meditation, breathing exercises,
+                    and journaling.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="text-left bg-card shadow-lg border-none">
+                <CardHeader>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 text-red-500">
+                    <Heart className="h-6 w-6" />
+                  </div>
+                  <CardTitle className="mt-4 font-bold text-lg">Privacy First</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Your conversations and emotional data are
+                    completely private and never stored
+                    permanently.
                   </p>
                 </CardContent>
               </Card>
             </div>
-          </div>
         </section>
       </main>
 
-      <footer className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-foreground/60">
-        <p>&copy; {new Date().getFullYear()} Mindwell. All rights reserved.</p>
+      <footer className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-muted-foreground">
+        <p>&copy; {new Date().getFullYear()} Emodash. All rights reserved.</p>
       </footer>
     </div>
   );

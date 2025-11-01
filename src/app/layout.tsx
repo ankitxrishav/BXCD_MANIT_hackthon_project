@@ -6,8 +6,8 @@ import { AuthProvider } from "@/components/auth/AuthProvider";
 import { ChatProvider } from '@/context/ChatProvider';
 
 export const metadata: Metadata = {
-  title: 'Mindwell: Your AI Mood Companion',
-  description: 'A personal AI companion for mood and emotion tracking.',
+  title: 'Emodash: Your AI Mental Wellness Companion',
+  description: 'Real-time emotion detection, personalized wellness recommendations, and compassionate AI support for your mental health journey.',
 };
 
 export default function RootLayout({

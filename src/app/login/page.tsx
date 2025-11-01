@@ -39,7 +39,7 @@ export default function LoginPage() {
               Welcome back
             </h2>
             <p className="mt-2 text-sm leading-6 text-foreground/70">
-              Sign in to continue your journey with Mindwell.
+              Sign in to continue your journey with Emodash.
             </p>
           </div>
 

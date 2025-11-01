@@ -74,7 +74,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Preferences</CardTitle>
-          <CardDescription>Customize your Mindwell experience.</CardDescription>
+          <CardDescription>Customize your Emodash experience.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
