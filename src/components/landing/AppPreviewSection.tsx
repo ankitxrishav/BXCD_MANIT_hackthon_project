@@ -1,3 +1,4 @@
+'use client';
 import { BentoGrid, BentoGridItem } from './BentoGrid';
 import { Bot, ChartNoAxesColumnIncreasing, Wind, BrainCircuit } from 'lucide-react';
 import AnimatedWrapper, { AnimatedItem } from './AnimatedWrapper';
@@ -58,7 +59,7 @@ export default function AppPreviewSection() {
                 </p>
             </div>
             <AnimatedWrapper type="stagger-children" className="mt-16">
-                <BentoGrid className="md:grid-cols-3">
+                <BentoGrid className="max-w-4xl mx-auto md:auto-rows-[20rem]">
                     {items.map((item, i) => (
                         <AnimatedItem key={i}>
                             <BentoGridItem
