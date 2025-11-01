@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRef, useEffect } from 'react';
@@ -13,7 +14,7 @@ interface ChatMessagesProps {
   isLoading: boolean;
 }
 
-export default function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+export default function ChatMessages({ messages = [], isLoading }: ChatMessagesProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { userProfile } = useAuth();
   const userInitial =
