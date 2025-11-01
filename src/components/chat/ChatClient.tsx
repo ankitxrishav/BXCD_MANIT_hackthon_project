@@ -11,7 +11,7 @@ import { useChat } from '@/context/ChatProvider';
 import { summarizeSentimentAnalysis } from '@/ai/flows/summarize-sentiment-analysis';
 
 export default function ChatClient() {
-  const { messages, addMessage, startNewSession, setMoodSummary, setSuggestions } = useChat();
+  const { messages, addMessage, startNewSession, setMoodSummary, setSuggestions, setLatestSentiment } = useChat();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -39,6 +39,12 @@ export default function ChatClient() {
       // Analyze sentiment and get a recommendation
       const sentimentResult = await analyzeSentiment({ text });
       
+      // Update the dashboard immediately with the latest sentiment
+      setLatestSentiment({
+          emotion: sentimentResult.emotion,
+          score: sentimentResult.sentimentScore
+      });
+
       const conversationContext = allMessages
         .slice(-5)
         .map(m => `${m.role}: ${m.text}`)
@@ -72,7 +78,7 @@ export default function ChatClient() {
         setMoodSummary(summaryResult.summary);
       }
 
-      setSuggestions(prev => [...prev, recommendationResult.recommendation]);
+      setSuggestions(prev => [...prev, recommendationResult.recommendation].slice(-3)); // Keep last 3 suggestions
 
 
     } catch (error) {

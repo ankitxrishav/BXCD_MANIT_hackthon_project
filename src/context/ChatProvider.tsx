@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, Dispatch, SetStateAction } from 'react';
-import type { ChatMessage, ChatSession } from '@/lib/types';
+import type { ChatMessage, ChatSession, Sentiment } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 
 interface ChatContextType {
@@ -15,6 +15,8 @@ interface ChatContextType {
   setMoodSummary: Dispatch<SetStateAction<string | null>>;
   suggestions: string[];
   setSuggestions: Dispatch<SetStateAction<string[]>>;
+  latestSentiment: Sentiment | null;
+  setLatestSentiment: Dispatch<SetStateAction<Sentiment | null>>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -34,6 +36,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [moodSummary, setMoodSummary] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [latestSentiment, setLatestSentiment] = useState<Sentiment | null>(null);
 
   const startNewSession = useCallback((initialMessageText?: string) => {
     if (!user) return;
@@ -50,6 +53,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     setActiveSessionId(newSessionId);
     setMoodSummary(null);
     setSuggestions([]);
+    setLatestSentiment(null);
 
     let initialMessages: ChatMessage[] = [];
     if (initialMessageText) {
@@ -90,7 +94,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     moodSummary,
     setMoodSummary,
     suggestions,
-    setSuggestions
+    setSuggestions,
+    latestSentiment,
+    setLatestSentiment
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

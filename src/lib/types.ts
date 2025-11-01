@@ -16,15 +16,17 @@ export type UserSettings = {
   dataRetentionPeriod: '30d' | '90d' | '1y' | 'forever';
 };
 
+export type Sentiment = {
+  score: number;
+  emotion: string;
+};
+
 export type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
   text: string;
   timestamp: Date;
-  sentiment?: {
-    score: number;
-    emotion: string;
-  };
+  sentiment?: Sentiment;
 };
 
 export type ChatSession = {
