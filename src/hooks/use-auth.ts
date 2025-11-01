@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useContext, createContext, useCallback } from 'react';
@@ -34,6 +33,19 @@ const MOCK_USER_PROFILE: UserProfile = {
     }
 };
 
+const handleSignIn = (router: any, setUser: any, setUserProfile: any, setLoading: any) => {
+    setLoading(true);
+    // Simulate a successful login
+    return new Promise(resolve => setTimeout(resolve, 500)).then(() => {
+        const sessionUser = JSON.stringify(MOCK_USER);
+        sessionStorage.setItem('mockUser', sessionUser);
+        setUser(MOCK_USER);
+        setUserProfile(MOCK_USER_PROFILE);
+        router.push('/dashboard');
+        setLoading(false);
+    });
+};
+
 export const useAuthProvider = (): AuthContextType => {
   const [user, setUser] = useState<MockUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -43,6 +55,7 @@ export const useAuthProvider = (): AuthContextType => {
 
   useEffect(() => {
     // Simulate checking auth state
+    setLoading(true);
     const sessionUser = sessionStorage.getItem('mockUser');
     if (sessionUser) {
       const parsedUser = JSON.parse(sessionUser);
@@ -53,16 +66,14 @@ export const useAuthProvider = (): AuthContextType => {
   }, []);
 
   const signInWithGoogle = async () => {
-    setLoading(true);
-    // Simulate a successful login
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const sessionUser = JSON.stringify(MOCK_USER);
-    sessionStorage.setItem('mockUser', sessionUser);
-    setUser(MOCK_USER);
-    setUserProfile(MOCK_USER_PROFILE);
-    router.push('/dashboard');
-    setLoading(false);
+    await handleSignIn(router, setUser, setUserProfile, setLoading);
   };
+
+  const signInWithEmail = async (email: string, pass: string) => {
+    // Here you can add mock validation if needed
+    console.log(`Signing in with Email: ${email}, Pass: ${pass}`);
+    await handleSignIn(router, setUser, setUserProfile, setLoading);
+  }
 
   const logout = async () => {
     setLoading(true);
@@ -72,8 +83,9 @@ export const useAuthProvider = (): AuthContextType => {
     setUser(null);
     setUserProfile(null);
     router.push('/login');
-    setLoading(false);
+    // A small delay to allow router to push before setting loading to false
+    setTimeout(() => setLoading(false), 100);
   };
 
-  return { user, userProfile, loading, signInWithGoogle, logout };
+  return { user, userProfile, loading, signInWithGoogle, signInWithEmail, logout };
 };

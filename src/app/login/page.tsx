@@ -1,17 +1,16 @@
-
 'use client';
 
-import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import LoginButton from '@/components/auth/LoginButton';
 import Logo from '@/components/layout/Logo';
+import LoginForm from '@/components/auth/LoginForm';
+import LoginButton from '@/components/auth/LoginButton';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 export default function LoginPage() {
-  const loginImage = PlaceHolderImages.find(p => p.id === 'login-background');
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -30,38 +29,37 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background/90 p-4">
+      <div className="w-full max-w-sm rounded-xl border bg-card shadow-lg p-8">
+        <div className="flex flex-col items-center justify-center text-center">
             <Logo />
-            <h2 className="mt-8 text-2xl md:text-3xl font-bold font-headline leading-9 tracking-tight text-primary">
-              Welcome back
-            </h2>
+            <h1 className="mt-8 text-3xl font-bold font-headline leading-9 tracking-tight text-primary">
+              Welcome Back
+            </h1>
             <p className="mt-2 text-sm leading-6 text-foreground/70">
               Sign in to continue your journey with Emodash.
             </p>
+        </div>
+
+        <div className="mt-8">
+          <LoginForm />
+
+          <div className="my-6 flex items-center">
+            <Separator className="flex-1" />
+            <span className="mx-4 text-xs uppercase text-muted-foreground">OR</span>
+            <Separator className="flex-1" />
           </div>
 
-          <div className="mt-10">
-            <div>
-              <LoginButton />
-            </div>
-          </div>
+          <LoginButton />
         </div>
-      </div>
-      <div className="relative hidden w-0 flex-1 lg:block">
-        {loginImage && (
-          <Image
-            className="absolute inset-0 h-full w-full object-cover"
-            src={loginImage.imageUrl}
-            alt={loginImage.description}
-            data-ai-hint={loginImage.imageHint}
-            fill
-            priority
-          />
-        )}
-        <div className="absolute inset-0 bg-primary/20 mix-blend-multiply" />
+        
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{' '}
+          <Link href="#" className="font-semibold text-primary hover:underline">
+            Sign Up
+          </Link>
+        </p>
+
       </div>
     </div>
   );
