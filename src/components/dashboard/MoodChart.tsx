@@ -16,7 +16,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useAuth } from "@/hooks/use-auth";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collectionGroup, query, where, orderBy, Timestamp } from "firebase/firestore";
 import { Skeleton } from "../ui/skeleton";
@@ -29,25 +28,27 @@ const chartConfig = {
   },
 } as const;
 
-export default function MoodChart() {
-  const { userProfile } = useAuth();
+interface MoodChartProps {
+  userId: string;
+}
+
+export default function MoodChart({ userId }: MoodChartProps) {
   const { firestore } = useFirebase();
   
   const sevenDaysAgo = useMemo(() => startOfDay(subDays(new Date(), 6)), []);
 
   const sentimentQuery = useMemoFirebase(() => {
-    // CRITICAL FIX: Ensure userProfile and its UID are available before creating the query.
-    if (!userProfile?.uid || !firestore) {
+    if (!userId || !firestore) {
       return null;
     }
     return query(
       collectionGroup(firestore, 'chatMessages'),
-      where('userId', '==', userProfile.uid),
+      where('userId', '==', userId),
       where('sentiment', '!=', null),
       where('timestamp', '>=', Timestamp.fromDate(sevenDaysAgo)),
       orderBy('timestamp', 'desc')
     );
-  }, [userProfile, firestore, sevenDaysAgo]);
+  }, [userId, firestore, sevenDaysAgo]);
 
   const { data: sentimentData, isLoading } = useCollection<ChatMessage>(sentimentQuery);
 
@@ -89,8 +90,7 @@ export default function MoodChart() {
 
   const hasData = useMemo(() => chartData.some(d => d.score > 0), [chartData]);
   
-  // Show skeleton while loading or if the query hasn't been created yet.
-  if (isLoading || !sentimentQuery) {
+  if (isLoading) {
       return (
           <Card>
               <CardHeader>

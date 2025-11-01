@@ -8,10 +8,10 @@ import QuickAccess from '@/components/dashboard/QuickAccess';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
-  const { userProfile } = useAuth();
+  const { userProfile, loading } = useAuth();
   const firstName = userProfile?.displayName?.split(' ')[0] || userProfile?.email || 'there';
 
-  if (!userProfile) {
+  if (loading || !userProfile) {
     return (
         <div className="space-y-8">
             <Skeleton className="h-10 w-1/3" />
@@ -36,10 +36,10 @@ export default function DashboardPage() {
       </div>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2">
-          <MoodChart />
+          <MoodChart userId={userProfile.uid} />
         </div>
         <div className="md:col-span-1">
-          <RecentActivity />
+          <RecentActivity userId={userProfile.uid} />
         </div>
       </div>
       <div>

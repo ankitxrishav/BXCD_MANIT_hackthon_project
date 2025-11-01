@@ -9,27 +9,28 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MessageSquare } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
 import { useCollection, useFirebase, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from "../ui/skeleton";
 import type { ChatSession } from "@/lib/types";
 
-export default function RecentActivity() {
-  const { userProfile } = useAuth();
+interface RecentActivityProps {
+  userId: string;
+}
+
+export default function RecentActivity({ userId }: RecentActivityProps) {
   const { firestore } = useFirebase();
 
   const recentSessionsQuery = useMemoFirebase(() => {
-      // CRITICAL FIX: Ensure userProfile and its UID are available before creating the query.
-      if (!userProfile?.uid || !firestore) return null;
-      const chatSessionRef = collection(firestore, 'users', userProfile.uid, 'chatSessions');
+      if (!userId || !firestore) return null;
+      const chatSessionRef = collection(firestore, 'users', userId, 'chatSessions');
       return query(chatSessionRef, orderBy("updatedAt", "desc"), limit(5));
-  }, [userProfile, firestore])
+  }, [userId, firestore])
 
   const { data: recentSessions, isLoading } = useCollection<ChatSession>(recentSessionsQuery);
 
-  if (isLoading || !recentSessionsQuery) {
+  if (isLoading) {
       return (
           <Card>
               <CardHeader>

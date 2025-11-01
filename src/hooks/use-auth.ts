@@ -2,12 +2,11 @@
 'use client';
 
 import { useState, useEffect, useContext, createContext, useCallback } from 'react';
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore';
-import { useFirebase } from '@/firebase/provider';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp, type Firestore } from 'firebase/firestore';
+import { useFirebase, useUser } from '@/firebase/provider';
 import type { AuthContextType, UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { Auth, User } from 'firebase/auth';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -23,7 +22,8 @@ export const useAuth = (): AuthContextType => {
 };
 
 export const useAuthProvider = (): AuthContextType => {
-  const { user, isUserLoading, auth, firestore } = useFirebase();
+  const { user, isUserLoading } = useUser();
+  const { auth, firestore } = useFirebase();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -46,16 +46,7 @@ export const useAuthProvider = (): AuthContextType => {
             dataRetentionPeriod: '90d',
           }
         };
-        setDoc(userRef, newUserProfile).catch(error => {
-            errorEmitter.emit(
-              'permission-error',
-              new FirestorePermissionError({
-                path: userRef.path,
-                operation: 'create',
-                requestResourceData: newUserProfile,
-              })
-            )
-        });
+        setDocumentNonBlocking(userRef, newUserProfile, { merge: true });
         setUserProfile(newUserProfile);
       }
     } catch (error) {
@@ -71,6 +62,7 @@ export const useAuthProvider = (): AuthContextType => {
 
   useEffect(() => {
     let isMounted = true;
+    setLoading(isUserLoading);
     if (!isUserLoading) {
       if (user && firestore) {
         fetchUserProfile(user, firestore).then(() => {
@@ -91,7 +83,6 @@ export const useAuthProvider = (): AuthContextType => {
       await signInWithPopup(auth, provider);
       router.push('/dashboard');
     } catch (error: any) {
-      // Don't log an error if the user cancels the popup
       if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
         return;
       }
