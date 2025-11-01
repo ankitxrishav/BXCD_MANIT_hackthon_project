@@ -9,25 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const SummarizeSentimentAnalysisInputSchema = z.object({
-  sentimentData: z
-    .string()
-    .describe("The sentiment data to summarize, provided as a string."),
-});
-
-export type SummarizeSentimentAnalysisInput = z.infer<
-  typeof SummarizeSentimentAnalysisInputSchema
->;
-
-const SummarizeSentimentAnalysisOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the user\'s mood trends over time.'),
-});
-
-export type SummarizeSentimentAnalysisOutput = z.infer<
-  typeof SummarizeSentimentAnalysisOutputSchema
->;
+import {
+  SummarizeSentimentAnalysisInputSchema,
+  SummarizeSentimentAnalysisOutputSchema,
+  type SummarizeSentimentAnalysisInput,
+  type SummarizeSentimentAnalysisOutput,
+} from '@/ai/schemas';
 
 export async function summarizeSentimentAnalysis(
   input: SummarizeSentimentAnalysisInput

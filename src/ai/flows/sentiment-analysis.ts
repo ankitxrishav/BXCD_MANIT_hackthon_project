@@ -9,30 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-export const SentimentAnalysisInputSchema = z.object({
-  text: z.string().describe('The text to analyze.'),
-});
-export type SentimentAnalysisInput = z.infer<
-  typeof SentimentAnalysisInputSchema
->;
-
-export const SentimentAnalysisOutputSchema = z.object({
-  sentimentScore: z
-    .number()
-    .describe(
-      'A numerical score representing the sentiment of the message (e.g., -1 for negative, 0 for neutral, 1 for positive).'
-    ),
-  emotion: z
-    .string()
-    .describe(
-      "The identified primary emotion in the message (e.g., 'joy', 'sadness', 'anger', 'neutral')."
-    ),
-});
-export type SentimentAnalysisOutput = z.infer<
-  typeof SentimentAnalysisOutputSchema
->;
+import {
+  SentimentAnalysisInputSchema,
+  SentimentAnalysisOutputSchema,
+  type SentimentAnalysisInput,
+  type SentimentAnalysisOutput,
+} from '@/ai/schemas';
 
 export async function analyzeSentiment(
   input: SentimentAnalysisInput

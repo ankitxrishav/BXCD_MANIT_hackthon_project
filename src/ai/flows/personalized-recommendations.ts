@@ -9,18 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const PersonalizedRecommendationInputSchema = z.object({
-  emotion: z.string().describe('The current emotion of the user.'),
-  conversationContext: z.string().describe('The recent conversation context with the user.'),
-});
-export type PersonalizedRecommendationInput = z.infer<typeof PersonalizedRecommendationInputSchema>;
-
-const PersonalizedRecommendationOutputSchema = z.object({
-  recommendation: z.string().describe('A personalized recommendation for the user.'),
-});
-export type PersonalizedRecommendationOutput = z.infer<typeof PersonalizedRecommendationOutputSchema>;
+import {
+  PersonalizedRecommendationInputSchema,
+  PersonalizedRecommendationOutputSchema,
+  type PersonalizedRecommendationInput,
+  type PersonalizedRecommendationOutput,
+} from '@/ai/schemas';
 
 export async function getPersonalizedRecommendation(input: PersonalizedRecommendationInput): Promise<PersonalizedRecommendationOutput> {
   return personalizedRecommendationFlow(input);

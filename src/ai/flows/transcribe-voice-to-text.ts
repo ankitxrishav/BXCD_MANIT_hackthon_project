@@ -9,25 +9,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const TranscribeVoiceToTextInputSchema = z.object({
-  audioDataUri: z
-    .string()
-    .describe(
-      "A voice recording, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-});
-export type TranscribeVoiceToTextInput = z.infer<
-  typeof TranscribeVoiceToTextInputSchema
->;
-
-const TranscribeVoiceToTextOutputSchema = z.object({
-  transcription: z.string().describe('The transcribed text from the audio.'),
-});
-export type TranscribeVoiceToTextOutput = z.infer<
-  typeof TranscribeVoiceToTextOutputSchema
->;
+import {
+  TranscribeVoiceToTextInputSchema,
+  TranscribeVoiceToTextOutputSchema,
+  type TranscribeVoiceToTextInput,
+  type TranscribeVoiceToTextOutput,
+} from '@/ai/schemas';
 
 export async function transcribeVoiceToText(
   input: TranscribeVoiceToTextInput
